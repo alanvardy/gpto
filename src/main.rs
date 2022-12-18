@@ -9,13 +9,13 @@ use colored::*;
 mod config;
 mod request;
 
-const APP: &str = "Tod";
+const APP: &str = "GPTO";
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const AUTHOR: &str = "Alan Vardy <alan@vardy.cc>";
-const ABOUT: &str = "A tiny unofficial Todoist client";
+const ABOUT: &str = "A tiny unofficial OpenAI GPT3 client";
 
 struct Arguments<'a> {
-    text: Option<String>,
+    prompt: Option<String>,
     config_path: Option<&'a str>,
 }
 
@@ -26,14 +26,14 @@ fn main() {
         .about(ABOUT);
     let matches = app
         .arg(
-            Arg::new("text")
-                .short('t')
-                .long("text")
+            Arg::new("prompt")
+                .short('p')
+                .long("prompt")
                 .required(false)
                 .action(ArgAction::Append)
                 .num_args(1..)
                 .value_parser(clap::value_parser!(String))
-                .help("Text to be processed"),
+                .help("Prompt to be completed"),
         )
         .arg(
             Arg::new("configuration path")
@@ -42,24 +42,24 @@ fn main() {
                 .num_args(1)
                 .required(false)
                 .value_name("CONFIGURATION PATH")
-                .help("Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/tod.cfg"),
+                .help("Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg"),
         )
         .get_matches();
 
-    let text = matches
-        .get_many("text")
+    let prompt = matches
+        .get_many("prompt")
         .map(|values| values.cloned().collect::<Vec<String>>().join(" "));
 
     let arguments = Arguments {
-        text,
+        prompt,
         config_path: matches
             .get_one::<String>("configuration path")
             .map(|s| s.as_str()),
     };
 
     match dispatch(arguments) {
-        Ok(text) => {
-            println!("{}", text);
+        Ok(output) => {
+            println!("{}", output);
             std::process::exit(0);
         }
         Err(e) => {
@@ -74,11 +74,11 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
 
     match arguments {
         Arguments {
-            text: Some(text),
+            prompt: Some(prompt),
             config_path: _,
-        } => request::completions(config, &text),
+        } => request::completions(config, &prompt),
         Arguments {
-            text: None,
+            prompt: None,
             config_path: _,
         } => Err(String::from(
             "gtfo cannot be run without parameters. To see available parameters use --help",
