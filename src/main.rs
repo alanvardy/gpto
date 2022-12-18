@@ -7,6 +7,7 @@ use clap::{Arg, ArgAction, Command};
 use colored::*;
 
 mod config;
+mod request;
 
 const APP: &str = "Tod";
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -69,13 +70,13 @@ fn main() {
 }
 
 fn dispatch(arguments: Arguments) -> Result<String, String> {
-    let _config: config::Config = config::get_or_create(arguments.config_path)?;
+    let config: config::Config = config::get_or_create(arguments.config_path)?;
 
     match arguments {
         Arguments {
             text: Some(text),
             config_path: _,
-        } => Ok(text),
+        } => request::completions(config, &text),
         Arguments {
             text: None,
             config_path: _,
