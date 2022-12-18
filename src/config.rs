@@ -1,7 +1,12 @@
+use crate::{request, VERSION};
+use colored::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::io::{Read, Write};
 use std::{fs, io};
+
+// Percentage of the time to hit Crates.io and check version number
+const VERSION_CHECK_PERCENTAGE: u8 = 10;
 
 /// App configuration, serialized as json in $XDG_CONFIG_HOME/gpto.cfg
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
@@ -36,6 +41,8 @@ impl Config {
             .or(Err("Could not find file"))?
             .read_to_string(&mut json)
             .or(Err("Could not read to string"))?;
+
+        maybe_check_for_latest_version();
 
         serde_json::from_str::<Config>(&json).map_err(|_| String::from("Could not parse JSON"))
     }
@@ -80,6 +87,33 @@ pub fn get_input(desc: &str) -> Result<String, String> {
         .or(Err("error: unable to read user input"))?;
 
     Ok(String::from(input.trim()))
+}
+
+fn maybe_check_for_latest_version() {
+    let random_number = (rand::random::<f64>() * 100.0).round() as u8;
+
+    if random_number <= VERSION_CHECK_PERCENTAGE {
+        check_for_latest_version()
+    }
+}
+
+fn check_for_latest_version() {
+    match request::get_latest_version() {
+        Ok(version) if version.as_str() != VERSION => {
+            println!(
+                "Latest GPTO version is {}, found {}.\nRun {} to update if you installed with Cargo",
+                version,
+                VERSION,
+                "cargo install gpto --force".bright_cyan()
+            );
+        }
+        Ok(_) => (),
+        Err(err) => println!(
+            "{}, {:?}",
+            "Could not fetch GPTO version from Cargo.io".red(),
+            err
+        ),
+    };
 }
 
 #[cfg(test)]
