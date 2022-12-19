@@ -17,3 +17,29 @@ Options:
   -h, --help                         Print help information
   -V, --version                      Print version information
 ```
+
+## Usage
+
+Get a completion with default parameters
+
+```bash
+> gpto --prompt tell me a joke
+
+Q: What did the fish say when it hit the wall?
+A: Dam!
+```
+
+Give an exhaustive list of all models
+
+```bash
+> gpto --models
+
+Models: 
+
+babbage
+ada
+davinci
+babbage-code-search-code
+text-similarity-babbage-001
+... and so on
+```
