@@ -14,9 +14,12 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 const AUTHOR: &str = "Alan Vardy <alan@vardy.cc>";
 const ABOUT: &str = "A tiny unofficial OpenAI GPT3 client";
 
+pub const DEFAULT_MODEL: &str = "text-davinci-003";
+
 struct Arguments<'a> {
     prompt: Option<String>,
     config_path: Option<&'a str>,
+    model: Option<&'a str>,
     models: bool,
 }
 
@@ -45,6 +48,18 @@ fn main() {
                 .value_name("CONFIGURATION PATH")
                 .help("Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg"),
         )
+        .arg(
+            Arg::new("model")
+                .short('m')
+                .long("model")
+                .num_args(1)
+                .required(false)
+                .value_name("MODEL")
+                .help(format!(
+                    "Model to use for completion. Defaults to {}. Use --models to see complete list.",
+                    DEFAULT_MODEL
+                )),
+        )
         .arg(flag_arg(
             "models",
             'd',
@@ -63,6 +78,7 @@ fn main() {
         config_path: matches
             .get_one::<String>("configuration path")
             .map(|s| s.as_str()),
+        model: matches.get_one::<String>("model").map(|s| s.as_str()),
     };
 
     match dispatch(arguments) {
@@ -85,16 +101,19 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             prompt: Some(prompt),
             config_path: _,
             models: false,
-        } => request::completions(config, &prompt),
+            model,
+        } => request::completions(config, &prompt, model),
         Arguments {
             prompt: None,
             config_path: _,
             models: true,
+            model: _,
         } => request::models(config),
         Arguments {
             prompt: None,
             config_path: _,
             models: false,
+            model: _,
         } => Err(String::from(
             "gtfo cannot be run without parameters. To see available parameters use --help",
         )),
@@ -102,6 +121,7 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             prompt: _,
             config_path: _,
             models: _,
+            model: _,
         } => Err(String::from(
             "Invalid parameters. To see available parameters use --help",
         )),

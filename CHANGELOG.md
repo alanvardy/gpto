@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Add the ability to list all models supported by API
+## 2022-12-18 0.1.2
+
+- Add `--models` option
+- Add `--model` option
+- Improve documentation
 
 ## 2022-12-18 0.1.1
 
