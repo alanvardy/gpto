@@ -3,7 +3,7 @@ extern crate matches;
 
 extern crate clap;
 
-use clap::{Arg, ArgAction, Command};
+use clap::{Arg, ArgAction, ArgMatches, Command};
 use colored::*;
 
 mod config;
@@ -17,6 +17,7 @@ const ABOUT: &str = "A tiny unofficial OpenAI GPT3 client";
 struct Arguments<'a> {
     prompt: Option<String>,
     config_path: Option<&'a str>,
+    models: bool,
 }
 
 fn main() {
@@ -44,6 +45,12 @@ fn main() {
                 .value_name("CONFIGURATION PATH")
                 .help("Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg"),
         )
+        .arg(flag_arg(
+            "models",
+            'd',
+            "models",
+            "Returns a list of models from OpenAI",
+        ))
         .get_matches();
 
     let prompt = matches
@@ -52,6 +59,7 @@ fn main() {
 
     let arguments = Arguments {
         prompt,
+        models: has_flag(matches.clone(), "models"),
         config_path: matches
             .get_one::<String>("configuration path")
             .map(|s| s.as_str()),
@@ -76,12 +84,42 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
         Arguments {
             prompt: Some(prompt),
             config_path: _,
+            models: false,
         } => request::completions(config, &prompt),
         Arguments {
             prompt: None,
             config_path: _,
+            models: true,
+        } => request::models(config),
+        Arguments {
+            prompt: None,
+            config_path: _,
+            models: false,
         } => Err(String::from(
             "gtfo cannot be run without parameters. To see available parameters use --help",
         )),
+        Arguments {
+            prompt: _,
+            config_path: _,
+            models: _,
+        } => Err(String::from(
+            "Invalid parameters. To see available parameters use --help",
+        )),
     }
+}
+
+fn flag_arg(id: &'static str, short: char, long: &'static str, help: &'static str) -> Arg {
+    Arg::new(id)
+        .short(short)
+        .long(long)
+        .value_parser(["yes", "no"])
+        .num_args(0..1)
+        .default_value("no")
+        .default_missing_value("yes")
+        .required(false)
+        .help(help)
+}
+
+fn has_flag(matches: ArgMatches, id: &'static str) -> bool {
+    matches.get_one::<String>(id) == Some(&String::from("yes"))
 }

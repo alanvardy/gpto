@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the ability to list all models supported by API
+
 ## 2022-12-18 0.1.1
 
 - BREAKING change: use `--prompt` instead of `--text` to match API

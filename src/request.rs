@@ -1,3 +1,4 @@
+use colored::*;
 use reqwest::blocking::Client;
 use reqwest::header::AUTHORIZATION;
 use reqwest::header::CONTENT_TYPE;
@@ -10,7 +11,10 @@ use crate::config::Config;
 #[cfg(test)]
 use mockito;
 
+// OPENAI URLS
 const COMPLETIONS_URL: &str = "/v1/completions";
+const MODELS_URL: &str = "/v1/models";
+
 const MODEL: &str = "text-davinci-003";
 const TEMPERATURE: f32 = 0.0;
 const MAX_TOKENS: u32 = 1000;
@@ -52,6 +56,16 @@ struct Version {
     num: String,
 }
 
+#[derive(Deserialize)]
+struct Models {
+    data: Vec<Model>,
+}
+
+#[derive(Deserialize)]
+struct Model {
+    id: String,
+}
+
 /// Get completions from input prompt
 pub fn completions(config: Config, prompt: &str) -> Result<String, String> {
     let body = json!({ "model": MODEL, "prompt": prompt,  "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS });
@@ -61,6 +75,14 @@ pub fn completions(config: Config, prompt: &str) -> Result<String, String> {
         serde_json::from_str(&json_response).or(Err("Could not serialize to CargoResponse"))?;
 
     Ok(response.choices.first().unwrap().text.clone())
+}
+pub fn models(config: Config) -> Result<String, String> {
+    let json_response = get_openai(config.token, MODELS_URL.to_string())?;
+    let models: Models =
+        serde_json::from_str(&json_response).or(Err("Could not serialize to Models"))?;
+    let model_list: Vec<String> = models.data.into_iter().map(|model| model.id).collect();
+    let result = format!("{}\n\n{}", "Models: ".green(), model_list.join("\n"));
+    Ok(result)
 }
 
 fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<String, String> {
@@ -78,6 +100,30 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
         .header(CONTENT_TYPE, "application/json")
         .header(AUTHORIZATION, authorization)
         .json(&body)
+        .send()
+        .or(Err("Did not get response from server"))?;
+
+    if response.status().is_success() {
+        Ok((response.text()).or(Err("Could not read response text"))?)
+    } else {
+        Err(format!("Error: {:#?}", response.text()))
+    }
+}
+
+fn get_openai(token: String, url: String) -> Result<String, String> {
+    #[cfg(not(test))]
+    let openai_url: &str = "https://api.openai.com";
+
+    #[cfg(test)]
+    let openai_url: &str = &mockito::server_url();
+
+    let request_url = format!("{}{}", openai_url, url);
+    let authorization: &str = &format!("Bearer {}", token);
+
+    let response = Client::new()
+        .get(request_url)
+        .header(CONTENT_TYPE, "application/json")
+        .header(AUTHORIZATION, authorization)
         .send()
         .or(Err("Did not get response from server"))?;
 
