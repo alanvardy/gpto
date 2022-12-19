@@ -22,6 +22,36 @@ Options:
 
 [Learn more about how to use text completion](https://beta.openai.com/docs/guides/completion/introduction)
 
+## Install from Crates.io
+
+[Install Rust](https://www.rust-lang.org/tools/install)
+
+```bash
+# Linux and MacOS
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Install GTPO
+
+```bash
+cargo install gtpo
+```
+
+## Install from GitHub
+
+[Install Rust](https://www.rust-lang.org/tools/install)
+
+Clone the project
+
+```bash
+git clone git@github.com:alanvardy/gpto.git
+cd gpto
+./test.sh # run the tests
+cargo build --release
+```
+
+You can then find the binary in `/target/release/`
+
 ## Usage
 
 Get a completion with default parameters
