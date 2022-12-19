@@ -15,6 +15,7 @@ pub struct Config {
     pub token: String,
     /// Path to config file
     pub path: String,
+    pub model: Option<String>,
 }
 
 impl Config {
@@ -22,6 +23,7 @@ impl Config {
         Ok(Config {
             path: generate_path()?,
             token: String::from(token),
+            model: None,
         })
     }
 
@@ -155,6 +157,7 @@ mod tests {
         assert_eq!(
             config.clone(),
             Ok(Config {
+                model: None,
                 token: String::from("faketoken"),
                 path: generate_path().unwrap(),
             })
@@ -167,6 +170,7 @@ mod tests {
         assert_eq!(
             config.clone(),
             Ok(Config {
+                model: None,
                 token: String::from("alreadycreated"),
                 path: generate_path().unwrap(),
             })
@@ -180,6 +184,7 @@ mod tests {
         let loaded_config = Config::load(&path).unwrap();
 
         let config = Config {
+            model: None,
             token: String::from("23984719029"),
             path: String::from("/home/vardy/dev/gpto/tests/gpto.cfg"),
         };

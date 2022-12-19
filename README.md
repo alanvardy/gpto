@@ -14,9 +14,13 @@ Usage: gpto [OPTIONS]
 Options:
   -p, --prompt <prompt>...           Prompt to be completed
   -o, --config <CONFIGURATION PATH>  Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg
+  -m, --model <MODEL>                Model to use for completion. Defaults to text-davinci-003. Use --models to see complete list.
+  -d, --models                       Returns a list of models from OpenAI
   -h, --help                         Print help information
   -V, --version                      Print version information
 ```
+
+[Learn more about how to use text completion](https://beta.openai.com/docs/guides/completion/introduction)
 
 ## Usage
 
@@ -27,6 +31,19 @@ Get a completion with default parameters
 
 Q: What did the fish say when it hit the wall?
 A: Dam!
+```
+
+Get a completion with a different model (this example uses the leading code completion model). And yes, the generated code is not idiomatic!
+
+Read more about models [here](https://beta.openai.com/docs/models/overview)
+
+```bash
+> gpto -m code-davinci-002 -p language is elixir\nwrite a function that raises an error if the argument is not an integer and multiplies it by 2 if it is an integer
+
+def multiply_by_two(x)
+  raise ArgumentError, "Argument is not an integer" unless x.is_a? Integer
+  x * 2
+end
 ```
 
 Give an exhaustive list of all models

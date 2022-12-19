@@ -7,6 +7,7 @@ use serde::Deserialize;
 use serde_json::json;
 
 use crate::config::Config;
+use crate::DEFAULT_MODEL;
 
 #[cfg(test)]
 use mockito;
@@ -15,7 +16,6 @@ use mockito;
 const COMPLETIONS_URL: &str = "/v1/completions";
 const MODELS_URL: &str = "/v1/models";
 
-const MODEL: &str = "text-davinci-003";
 const TEMPERATURE: f32 = 0.0;
 const MAX_TOKENS: u32 = 1000;
 
@@ -36,14 +36,13 @@ struct Choice {
     finish_reason: String,
 }
 #[derive(Deserialize)]
-#[allow(dead_code)]
 struct Response {
-    id: String,
-    object: String,
-    created: u32,
-    model: String,
+    // id: String,
+    // object: String,
+    // created: u32,
+    // model: String,
     choices: Vec<Choice>,
-    usage: Usage,
+    // usage: Usage,
 }
 
 #[derive(Deserialize)]
@@ -67,8 +66,11 @@ struct Model {
 }
 
 /// Get completions from input prompt
-pub fn completions(config: Config, prompt: &str) -> Result<String, String> {
-    let body = json!({ "model": MODEL, "prompt": prompt,  "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS });
+pub fn completions(config: Config, prompt: &str, model: Option<&str>) -> Result<String, String> {
+    let model = model
+        .map(|x| x.to_string())
+        .unwrap_or_else(|| config.model.unwrap_or_else(|| String::from(DEFAULT_MODEL)));
+    let body = json!({ "model": model, "prompt": prompt,  "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS });
 
     let json_response = post_openai(config.token, COMPLETIONS_URL.to_string(), body)?;
     let response: Response =
