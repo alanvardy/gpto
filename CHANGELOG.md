@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Add suffix flag
+- Add `--suffix` option
+- Add `--number` option
 
 ## 2022-12-18 0.1.2
 

@@ -19,6 +19,7 @@ pub const DEFAULT_MODEL: &str = "text-davinci-003";
 struct Arguments<'a> {
     prompt: Option<String>,
     suffix: Option<String>,
+    number: Option<u8>,
     config_path: Option<&'a str>,
     model: Option<&'a str>,
     models: bool,
@@ -48,7 +49,7 @@ fn main() {
                 .action(ArgAction::Append)
                 .num_args(1..)
                 .value_parser(clap::value_parser!(String))
-                .help("The suffix that comes after a completion of inserted text"),
+                .help("The suffix that comes after a completion of inserted text. Defaults to an empty string"),
         )
         .arg(
             Arg::new("configuration path")
@@ -58,6 +59,16 @@ fn main() {
                 .required(false)
                 .value_name("CONFIGURATION PATH")
                 .help("Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg"),
+        )
+        .arg(
+            Arg::new("number")
+                .short('n')
+                .long("number")
+                .num_args(1)
+                .required(false)
+                .value_parser(clap::value_parser!(u8))
+                .value_name("NUMBER")
+                .help("How many completions to generate for each prompt. Defaults to 1"),
         )
         .arg(
             Arg::new("model")
@@ -95,6 +106,7 @@ fn main() {
             .get_one::<String>("configuration path")
             .map(|s| s.as_str()),
         model: matches.get_one::<String>("model").map(|s| s.as_str()),
+        number: matches.get_one::<u8>("number").map(|s| s.to_owned()),
     };
 
     match dispatch(arguments) {
@@ -118,13 +130,15 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             suffix,
             config_path: _,
             models: false,
+            number,
             model,
-        } => request::completions(config, &prompt, model, suffix),
+        } => request::completions(config, &prompt, model, suffix, number),
         Arguments {
             prompt: None,
             config_path: _,
             models: true,
             model: _,
+            number: None,
             suffix: None,
         } => request::models(config),
         Arguments {
@@ -132,6 +146,7 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             config_path: _,
             models: false,
             model: _,
+            number: None,
             suffix: None,
         } => Err(String::from(
             "gtfo cannot be run without parameters. To see available parameters use --help",
@@ -142,6 +157,7 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             models: _,
             model: _,
             suffix: _,
+            number: _,
         } => Err(String::from(
             "Invalid parameters. To see available parameters use --help",
         )),
