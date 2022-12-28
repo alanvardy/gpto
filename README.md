@@ -12,7 +12,8 @@ A tiny unofficial OpenAI GPT3 client
 Usage: gpto [OPTIONS]
 
 Options:
-  -p, --prompt <prompt>...           Prompt to be completed
+  -p, --prompt <prompt>...           The prompt(s) to generate completions for
+  -s, --suffix <suffix>...           The suffix that comes after a completion of inserted text
   -o, --config <CONFIGURATION PATH>  Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg
   -m, --model <MODEL>                Model to use for completion. Defaults to text-davinci-003. Use --models to see complete list.
   -d, --models                       Returns a list of models from OpenAI

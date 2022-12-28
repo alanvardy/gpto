@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add suffix flag
+
 ## 2022-12-18 0.1.2
 
 - Add `--models` option
