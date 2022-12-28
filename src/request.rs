@@ -71,17 +71,24 @@ pub fn completions(
     prompt: &str,
     model: Option<&str>,
     suffix: Option<String>,
+    number: Option<u8>,
 ) -> Result<String, String> {
+    let number = number.unwrap_or(1);
     let model = model
         .map(|x| x.to_string())
         .unwrap_or_else(|| config.model.unwrap_or_else(|| String::from(DEFAULT_MODEL)));
-    let body = json!({ "model": model, "prompt": prompt,  "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS });
+    let body = json!({ "model": model, "prompt": prompt,  "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS, "n": number });
 
     let json_response = post_openai(config.token, COMPLETIONS_URL.to_string(), body)?;
     let response: Response =
         serde_json::from_str(&json_response).or(Err("Could not serialize to CargoResponse"))?;
 
-    let output = response.choices.first().unwrap().text.clone();
+    let output = response
+        .choices
+        .into_iter()
+        .map(|x| x.text)
+        .collect::<Vec<String>>()
+        .join("\n\n---");
     let suffix = suffix.unwrap_or_else(|| String::from(""));
 
     Ok(format!("{}{}", output, suffix))
