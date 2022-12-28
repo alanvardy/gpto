@@ -66,7 +66,12 @@ struct Model {
 }
 
 /// Get completions from input prompt
-pub fn completions(config: Config, prompt: &str, model: Option<&str>) -> Result<String, String> {
+pub fn completions(
+    config: Config,
+    prompt: &str,
+    model: Option<&str>,
+    suffix: Option<String>,
+) -> Result<String, String> {
     let model = model
         .map(|x| x.to_string())
         .unwrap_or_else(|| config.model.unwrap_or_else(|| String::from(DEFAULT_MODEL)));
@@ -76,7 +81,10 @@ pub fn completions(config: Config, prompt: &str, model: Option<&str>) -> Result<
     let response: Response =
         serde_json::from_str(&json_response).or(Err("Could not serialize to CargoResponse"))?;
 
-    Ok(response.choices.first().unwrap().text.clone())
+    let output = response.choices.first().unwrap().text.clone();
+    let suffix = suffix.unwrap_or_else(|| String::from(""));
+
+    Ok(format!("{}{}", output, suffix))
 }
 pub fn models(config: Config) -> Result<String, String> {
     let json_response = get_openai(config.token, MODELS_URL.to_string())?;
