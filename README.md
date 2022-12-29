@@ -48,6 +48,13 @@ Install GTPO
 cargo install gtpo
 ```
 
+## Install from AUR
+
+```bash
+# Use yay or another AUR helper
+yay gpto-bin
+```
+
 ## Install from GitHub
 
 [Install Rust](https://www.rust-lang.org/tools/install)
