@@ -62,7 +62,7 @@ fn main() {
                 .long("config")
                 .num_args(1)
                 .required(false)
-                .value_name("CONFIGURATION PATH")
+                .value_name("path to config file")
                 .help("Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg"),
         )
         .arg(
@@ -72,7 +72,7 @@ fn main() {
                 .num_args(1)
                 .required(false)
                 .value_parser(clap::value_parser!(u8))
-                .value_name("NUMBER")
+                .value_name("integer")
                 .help(format!("How many completions to generate for each prompt. Defaults to {}", DEFAULT_NUMBER)),
         )
         .arg(
@@ -82,7 +82,7 @@ fn main() {
                 .num_args(1)
                 .required(false)
                 .value_parser(clap::value_parser!(f32))
-                .value_name("TEMPERATURE")
+                .value_name("float")
                 .help(format!("What sampling temperature to use. 
                 Higher values means the model will take more risks. 
                 Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
@@ -95,7 +95,7 @@ fn main() {
                 .num_args(1)
                 .required(false)
                 .value_parser(clap::value_parser!(f32))
-                .value_name("TEMPERATURE")
+                .value_name("float")
                 .help(format!("An alternative to sampling with temperature, called nucleus sampling, 
                 where the model considers the results of the tokens with top_p probability mass. 
                 So 0.1 means only the tokens comprising the top 10% probability mass are considered.
@@ -108,7 +108,7 @@ fn main() {
                 .long("model")
                 .num_args(1)
                 .required(false)
-                .value_name("MODEL")
+                .value_name("model name")
                 .help(format!(
                     "Model to use for completion. Defaults to {}. Use --models to see complete list.",
                     DEFAULT_MODEL
