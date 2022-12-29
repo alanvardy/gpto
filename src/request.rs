@@ -7,7 +7,7 @@ use serde::Deserialize;
 use serde_json::json;
 
 use crate::config::Config;
-use crate::DEFAULT_MODEL;
+use crate::{DEFAULT_MODEL, DEFAULT_NUMBER, DEFAULT_TEMPERATURE, DEFAULT_TOP_P};
 
 #[cfg(test)]
 use mockito;
@@ -16,7 +16,6 @@ use mockito;
 const COMPLETIONS_URL: &str = "/v1/completions";
 const MODELS_URL: &str = "/v1/models";
 
-const TEMPERATURE: f32 = 0.0;
 const MAX_TOKENS: u32 = 1000;
 
 // CRATES.IO URLS
@@ -72,12 +71,22 @@ pub fn completions(
     model: Option<&str>,
     suffix: Option<String>,
     number: Option<u8>,
+    temperature: Option<f32>,
+    top_p: Option<f32>,
 ) -> Result<String, String> {
-    let number = number.unwrap_or(1);
+    let number = number.unwrap_or(DEFAULT_NUMBER);
+    let temperature = temperature.unwrap_or(DEFAULT_TEMPERATURE);
+    let top_p = top_p.unwrap_or(DEFAULT_TOP_P);
     let model = model
         .map(|x| x.to_string())
         .unwrap_or_else(|| config.model.unwrap_or_else(|| String::from(DEFAULT_MODEL)));
-    let body = json!({ "model": model, "prompt": prompt,  "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS, "n": number });
+    let body = json!({ 
+        "model": model, 
+        "prompt": prompt,  
+        "max_tokens": MAX_TOKENS, 
+        "n": number, 
+        "temperature": temperature, 
+        "top_p": top_p });
 
     let json_response = post_openai(config.token, COMPLETIONS_URL.to_string(), body)?;
     let response: Response =

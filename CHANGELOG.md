@@ -4,6 +4,8 @@
 
 - Add `--suffix` option
 - Add `--number` option
+- Add `--temperature` option
+- Add `--top_p` option
 
 ## 2022-12-18 0.1.2
 
