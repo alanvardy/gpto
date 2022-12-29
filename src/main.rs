@@ -15,11 +15,16 @@ const AUTHOR: &str = "Alan Vardy <alan@vardy.cc>";
 const ABOUT: &str = "A tiny unofficial OpenAI GPT3 client";
 
 pub const DEFAULT_MODEL: &str = "text-davinci-003";
+pub const DEFAULT_NUMBER: u8 = 1;
+pub const DEFAULT_TEMPERATURE: f32 = 1.0;
+pub const DEFAULT_TOP_P: f32 = 1.0;
 
 struct Arguments<'a> {
     prompt: Option<String>,
     suffix: Option<String>,
     number: Option<u8>,
+    temperature: Option<f32>,
+    top_p: Option<f32>,
     config_path: Option<&'a str>,
     model: Option<&'a str>,
     models: bool,
@@ -68,7 +73,34 @@ fn main() {
                 .required(false)
                 .value_parser(clap::value_parser!(u8))
                 .value_name("NUMBER")
-                .help("How many completions to generate for each prompt. Defaults to 1"),
+                .help(format!("How many completions to generate for each prompt. Defaults to {}", DEFAULT_NUMBER)),
+        )
+        .arg(
+            Arg::new("temperature")
+                .short('t')
+                .long("temperature")
+                .num_args(1)
+                .required(false)
+                .value_parser(clap::value_parser!(f32))
+                .value_name("TEMPERATURE")
+                .help(format!("What sampling temperature to use. 
+                Higher values means the model will take more risks. 
+                Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
+                Defaults to {}", DEFAULT_TEMPERATURE)),
+        )
+        .arg(
+            Arg::new("top_p")
+                .short('k')
+                .long("top_p")
+                .num_args(1)
+                .required(false)
+                .value_parser(clap::value_parser!(f32))
+                .value_name("TEMPERATURE")
+                .help(format!("An alternative to sampling with temperature, called nucleus sampling, 
+                where the model considers the results of the tokens with top_p probability mass. 
+                So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+                We generally recommend altering this or temperature but not both.
+                Defaults to {}", DEFAULT_TOP_P)),
         )
         .arg(
             Arg::new("model")
@@ -107,6 +139,8 @@ fn main() {
             .map(|s| s.as_str()),
         model: matches.get_one::<String>("model").map(|s| s.as_str()),
         number: matches.get_one::<u8>("number").map(|s| s.to_owned()),
+        temperature: matches.get_one::<f32>("temperature").map(|s| s.to_owned()),
+        top_p: matches.get_one::<f32>("top_p").map(|s| s.to_owned()),
     };
 
     match dispatch(arguments) {
@@ -132,7 +166,9 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             models: false,
             number,
             model,
-        } => request::completions(config, &prompt, model, suffix, number),
+            temperature,
+            top_p,
+        } => request::completions(config, &prompt, model, suffix, number, temperature, top_p),
         Arguments {
             prompt: None,
             config_path: _,
@@ -140,6 +176,8 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             model: _,
             number: None,
             suffix: None,
+            temperature: None,
+            top_p: None,
         } => request::models(config),
         Arguments {
             prompt: None,
@@ -148,6 +186,8 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             model: _,
             number: None,
             suffix: None,
+            temperature: None,
+            top_p: None,
         } => Err(String::from(
             "gtfo cannot be run without parameters. To see available parameters use --help",
         )),
@@ -158,6 +198,8 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             model: _,
             suffix: _,
             number: _,
+            temperature: _,
+            top_p: _,
         } => Err(String::from(
             "Invalid parameters. To see available parameters use --help",
         )),
