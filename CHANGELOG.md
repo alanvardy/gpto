@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2022-12-29 0.1.3
+
 - Add `--suffix` option
 - Add `--number` option
 - Add `--temperature` option
