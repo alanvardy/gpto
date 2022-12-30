@@ -15,9 +15,30 @@ const AUTHOR: &str = "Alan Vardy <alan@vardy.cc>";
 const ABOUT: &str = "A tiny unofficial OpenAI GPT3 client";
 
 pub const DEFAULT_MODEL: &str = "text-davinci-003";
+pub const MODEL_HELP: &str =
+    "Model to use for completion. Defaults to text-davinci-003. Use --models to see complete list.";
+
 pub const DEFAULT_NUMBER: u8 = 1;
 pub const DEFAULT_TEMPERATURE: f32 = 1.0;
+pub const TEMPERATURE_HELP: &str = "What sampling temperature to use. 
+                Higher values means the model will take more risks. 
+                Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
+                Defaults to 1.0";
 pub const DEFAULT_TOP_P: f32 = 1.0;
+pub const TOP_P_HELP: &str =
+    "An alternative to sampling with temperature, called nucleus sampling, 
+     where the model considers the results of the tokens with top_p probability mass. 
+     So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+     We generally recommend altering this or temperature but not both.
+     Defaults to 1.0";
+
+pub const SUFFIX_HELP: &str =
+    "The suffix that comes after a completion of inserted text. Defaults to an empty string";
+
+pub const CONFIG_HELP: &str =
+    "Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg";
+pub const PROMPT_HELP: &str = "The prompt(s) to generate completions for";
+pub const NUMBER_HELP: &str = "How many completions to generate for each prompt. Defaults to 1";
 
 struct Arguments<'a> {
     prompt: Option<String>,
@@ -36,107 +57,35 @@ fn main() {
         .author(AUTHOR)
         .about(ABOUT);
     let matches = app
-        .arg(
-            Arg::new("prompt")
-                .short('p')
-                .long("prompt")
-                .required(false)
-                .action(ArgAction::Append)
-                .num_args(1..)
-                .value_parser(clap::value_parser!(String))
-                .help("The prompt(s) to generate completions for"),
-        )
-        .arg(
-            Arg::new("suffix")
-                .short('s')
-                .long("suffix")
-                .required(false)
-                .action(ArgAction::Append)
-                .num_args(1..)
-                .value_parser(clap::value_parser!(String))
-                .help("The suffix that comes after a completion of inserted text. Defaults to an empty string"),
-        )
-        .arg(
-            Arg::new("configuration path")
-                .short('o')
-                .long("config")
-                .num_args(1)
-                .required(false)
-                .value_name("path to config file")
-                .help("Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg"),
-        )
-        .arg(
-            Arg::new("number")
-                .short('n')
-                .long("number")
-                .num_args(1)
-                .required(false)
-                .value_parser(clap::value_parser!(u8))
-                .value_name("integer")
-                .help(format!("How many completions to generate for each prompt. Defaults to {}", DEFAULT_NUMBER)),
-        )
-        .arg(
-            Arg::new("temperature")
-                .short('t')
-                .long("temperature")
-                .num_args(1)
-                .required(false)
-                .value_parser(clap::value_parser!(f32))
-                .value_name("float")
-                .help(format!("What sampling temperature to use. 
-                Higher values means the model will take more risks. 
-                Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
-                Defaults to {}", DEFAULT_TEMPERATURE)),
-        )
-        .arg(
-            Arg::new("top_p")
-                .short('k')
-                .long("top_p")
-                .num_args(1)
-                .required(false)
-                .value_parser(clap::value_parser!(f32))
-                .value_name("float")
-                .help(format!("An alternative to sampling with temperature, called nucleus sampling, 
-                where the model considers the results of the tokens with top_p probability mass. 
-                So 0.1 means only the tokens comprising the top 10% probability mass are considered.
-                We generally recommend altering this or temperature but not both.
-                Defaults to {}", DEFAULT_TOP_P)),
-        )
-        .arg(
-            Arg::new("model")
-                .short('m')
-                .long("model")
-                .num_args(1)
-                .required(false)
-                .value_name("model name")
-                .help(format!(
-                    "Model to use for completion. Defaults to {}. Use --models to see complete list.",
-                    DEFAULT_MODEL
-                )),
-        )
-        .arg(flag_arg(
+        .arg(flag_string("prompt", 'p', PROMPT_HELP))
+        .arg(flag_string("suffix", 's', SUFFIX_HELP))
+        .arg(flag_float("temperature", 't', TEMPERATURE_HELP))
+        .arg(flag_integer("number", 'n', NUMBER_HELP))
+        .arg(flag_float("top_p", 'k', TOP_P_HELP))
+        .arg(flag_string_no_spaces(
+            "model",
+            'm',
+            "model name",
+            MODEL_HELP,
+        ))
+        .arg(flag_string_no_spaces(
+            "config",
+            'o',
+            "path to config file",
+            CONFIG_HELP,
+        ))
+        .arg(flag_no_value(
             "models",
             'd',
-            "models",
             "Returns a list of models from OpenAI",
         ))
         .get_matches();
 
-    let prompt = matches
-        .get_many("prompt")
-        .map(|values| values.cloned().collect::<Vec<String>>().join(" "));
-
-    let suffix = matches
-        .get_many("suffix")
-        .map(|values| values.cloned().collect::<Vec<String>>().join(" "));
-
     let arguments = Arguments {
-        prompt,
-        suffix,
+        prompt: join_string(matches.clone(), "prompt"),
+        suffix: join_string(matches.clone(), "suffix"),
         models: has_flag(matches.clone(), "models"),
-        config_path: matches
-            .get_one::<String>("configuration path")
-            .map(|s| s.as_str()),
+        config_path: matches.get_one::<String>("config").map(|s| s.as_str()),
         model: matches.get_one::<String>("model").map(|s| s.as_str()),
         number: matches.get_one::<u8>("number").map(|s| s.to_owned()),
         temperature: matches.get_one::<f32>("temperature").map(|s| s.to_owned()),
@@ -206,8 +155,8 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
     }
 }
 
-fn flag_arg(id: &'static str, short: char, long: &'static str, help: &'static str) -> Arg {
-    Arg::new(id)
+fn flag_no_value(long: &'static str, short: char, help: &'static str) -> Arg {
+    Arg::new(long)
         .short(short)
         .long(long)
         .value_parser(["yes", "no"])
@@ -218,6 +167,58 @@ fn flag_arg(id: &'static str, short: char, long: &'static str, help: &'static st
         .help(help)
 }
 
+fn flag_string_no_spaces(
+    long: &'static str,
+    short: char,
+    value_name: &'static str,
+    help: &'static str,
+) -> Arg {
+    Arg::new(long)
+        .short(short)
+        .long(long)
+        .num_args(1)
+        .required(false)
+        .value_name(value_name)
+        .help(help)
+}
+
+fn flag_string(long: &'static str, short: char, help: &'static str) -> Arg {
+    Arg::new(long)
+        .short(short)
+        .long(long)
+        .required(false)
+        .action(ArgAction::Append)
+        .num_args(1..)
+        .value_parser(clap::value_parser!(String))
+        .help(help)
+}
+fn flag_float(long: &'static str, short: char, help: &'static str) -> Arg {
+    Arg::new(long)
+        .short(short)
+        .long(long)
+        .num_args(1)
+        .required(false)
+        .value_parser(clap::value_parser!(f32))
+        .value_name("float")
+        .help(help)
+}
+fn flag_integer(long: &'static str, short: char, help: &'static str) -> Arg {
+    Arg::new(long)
+        .short(short)
+        .long(long)
+        .num_args(1)
+        .required(false)
+        .value_parser(clap::value_parser!(u8))
+        .value_name("integer")
+        .help(help)
+}
+
 fn has_flag(matches: ArgMatches, id: &'static str) -> bool {
     matches.get_one::<String>(id) == Some(&String::from("yes"))
+}
+
+fn join_string(matches: ArgMatches, long: &str) -> Option<String> {
+    matches
+        .get_many(long)
+        .map(|values| values.cloned().collect::<Vec<String>>().join(" "))
 }
