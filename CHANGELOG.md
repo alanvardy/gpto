@@ -2,9 +2,10 @@
 
 ## Unreleased
 
+- Add `--echo` option
+
 ## 2022-12-29 0.1.3
 
-- Add `--echo` option
 - Add `--suffix` option
 - Add `--number` option
 - Add `--temperature` option
