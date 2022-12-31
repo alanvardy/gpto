@@ -14,20 +14,20 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 const AUTHOR: &str = "Alan Vardy <alan@vardy.cc>";
 const ABOUT: &str = "A tiny unofficial OpenAI GPT3 client";
 
-pub const DEFAULT_MODEL: &str = "text-davinci-003";
+pub const MODEL_DEFAULT: &str = "text-davinci-003";
 pub const MODEL_HELP: &str =
     "Model to use for completion. Defaults to text-davinci-003. Use --models to see complete list.";
 
-pub const DEFAULT_NUMBER: u8 = 1;
-pub const DEFAULT_TEMPERATURE: f32 = 1.0;
-pub const TEMPERATURE_HELP: &str = "What sampling temperature to use. 
-                Higher values means the model will take more risks. 
-                Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
-                Defaults to 1.0";
-pub const DEFAULT_TOP_P: f32 = 1.0;
-pub const TOP_P_HELP: &str =
-    "An alternative to sampling with temperature, called nucleus sampling, 
-     where the model considers the results of the tokens with top_p probability mass. 
+pub const NUMBER_DEFAULT: u8 = 1;
+pub const TEMPERATURE_DEFAULT: f32 = 1.0;
+pub const TEMPERATURE_HELP: &str =
+    "What sampling temperature to use. 
+     Higher values means the model will take more risks. 
+     Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
+     Defaults to 1.0";
+pub const TOP_P_DEFAULT: f32 = 1.0;
+pub const TOP_P_HELP: &str = "An alternative to sampling with temperature, called nucleus sampling,
+     where the model considers the results of the tokens with top_p probability mass.
      So 0.1 means only the tokens comprising the top 10% probability mass are considered.
      We generally recommend altering this or temperature but not both.
      Defaults to 1.0";
@@ -39,8 +39,11 @@ pub const CONFIG_HELP: &str =
     "Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg";
 pub const PROMPT_HELP: &str = "The prompt(s) to generate completions for";
 pub const NUMBER_HELP: &str = "How many completions to generate for each prompt. Defaults to 1";
+pub const ECHO_DEFAULT: bool = false;
+pub const ECHO_HELP: &str = "Echo back the prompt in addition to the completion. Defaults to false";
+pub const MODELS_HELP: &str = "Returns a list of models from OpenAI";
 
-struct Arguments<'a> {
+pub struct Arguments<'a> {
     prompt: Option<String>,
     suffix: Option<String>,
     number: Option<u8>,
@@ -49,6 +52,7 @@ struct Arguments<'a> {
     config_path: Option<&'a str>,
     model: Option<&'a str>,
     models: bool,
+    echo: bool,
 }
 
 fn main() {
@@ -74,17 +78,15 @@ fn main() {
             "path to config file",
             CONFIG_HELP,
         ))
-        .arg(flag_no_value(
-            "models",
-            'd',
-            "Returns a list of models from OpenAI",
-        ))
+        .arg(flag_no_value("models", 'd', MODELS_HELP))
+        .arg(flag_no_value("echo", 'e', ECHO_HELP))
         .get_matches();
 
     let arguments = Arguments {
         prompt: join_string(matches.clone(), "prompt"),
         suffix: join_string(matches.clone(), "suffix"),
         models: has_flag(matches.clone(), "models"),
+        echo: has_flag(matches.clone(), "echo"),
         config_path: matches.get_one::<String>("config").map(|s| s.as_str()),
         model: matches.get_one::<String>("model").map(|s| s.as_str()),
         number: matches.get_one::<u8>("number").map(|s| s.to_owned()),
@@ -109,19 +111,15 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
 
     match arguments {
         Arguments {
-            prompt: Some(prompt),
-            suffix,
-            config_path: _,
+            prompt: Some(_),
             models: false,
-            number,
-            model,
-            temperature,
-            top_p,
-        } => request::completions(config, &prompt, model, suffix, number, temperature, top_p),
+            ..
+        } => request::completions(arguments, config),
         Arguments {
             prompt: None,
             config_path: _,
             models: true,
+            echo: false,
             model: _,
             number: None,
             suffix: None,
@@ -132,6 +130,7 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             prompt: None,
             config_path: _,
             models: false,
+            echo: false,
             model: _,
             number: None,
             suffix: None,
@@ -140,16 +139,7 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
         } => Err(String::from(
             "gtfo cannot be run without parameters. To see available parameters use --help",
         )),
-        Arguments {
-            prompt: _,
-            config_path: _,
-            models: _,
-            model: _,
-            suffix: _,
-            number: _,
-            temperature: _,
-            top_p: _,
-        } => Err(String::from(
+        Arguments { .. } => Err(String::from(
             "Invalid parameters. To see available parameters use --help",
         )),
     }

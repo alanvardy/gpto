@@ -14,19 +14,20 @@ Usage: gpto [OPTIONS]
 Options:
   -p, --prompt <prompt>...            The prompt(s) to generate completions for
   -s, --suffix <suffix>...            The suffix that comes after a completion of inserted text. Defaults to an empty string
-  -o, --config <path to config file>  Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg
-  -n, --number <integer>              How many completions to generate for each prompt. Defaults to 1
   -t, --temperature <float>           What sampling temperature to use. 
-                                                      Higher values means the model will take more risks. 
-                                                      Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
-                                                      Defaults to 1
-  -k, --top_p <float>                 An alternative to sampling with temperature, called nucleus sampling, 
-                                                      where the model considers the results of the tokens with top_p probability mass. 
-                                                      So 0.1 means only the tokens comprising the top 10% probability mass are considered.
-                                                      We generally recommend altering this or temperature but not both.
-                                                      Defaults to 1
+                                           Higher values means the model will take more risks. 
+                                           Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
+                                           Defaults to 1.0
+  -n, --number <integer>              How many completions to generate for each prompt. Defaults to 1
+  -k, --top_p <float>                 An alternative to sampling with temperature, called nucleus sampling,
+                                           where the model considers the results of the tokens with top_p probability mass.
+                                           So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+                                           We generally recommend altering this or temperature but not both.
+                                           Defaults to 1.0
   -m, --model <model name>            Model to use for completion. Defaults to text-davinci-003. Use --models to see complete list.
+  -o, --config <path to config file>  Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg
   -d, --models                        Returns a list of models from OpenAI
+  -e, --echo                          Echo back the prompt in addition to the completion. Defaults to false
   -h, --help                          Print help information
   -V, --version                       Print version information
 ```
