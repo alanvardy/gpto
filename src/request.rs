@@ -7,7 +7,8 @@ use serde::Deserialize;
 use serde_json::json;
 
 use crate::config::Config;
-use crate::{DEFAULT_MODEL, DEFAULT_NUMBER, DEFAULT_TEMPERATURE, DEFAULT_TOP_P};
+use crate::Arguments;
+use crate::{MODEL_DEFAULT, NUMBER_DEFAULT, TEMPERATURE_DEFAULT, TOP_P_DEFAULT};
 
 #[cfg(test)]
 use mockito;
@@ -65,28 +66,22 @@ struct Model {
 }
 
 /// Get completions from input prompt
-pub fn completions(
-    config: Config,
-    prompt: &str,
-    model: Option<&str>,
-    suffix: Option<String>,
-    number: Option<u8>,
-    temperature: Option<f32>,
-    top_p: Option<f32>,
-) -> Result<String, String> {
-    let number = number.unwrap_or(DEFAULT_NUMBER);
-    let temperature = temperature.unwrap_or(DEFAULT_TEMPERATURE);
-    let top_p = top_p.unwrap_or(DEFAULT_TOP_P);
-    let model = model
+pub fn completions(arguments: Arguments, config: Config) -> Result<String, String> {
+    let number = arguments.number.unwrap_or(NUMBER_DEFAULT);
+    let temperature = arguments.temperature.unwrap_or(TEMPERATURE_DEFAULT);
+    let top_p = arguments.top_p.unwrap_or(TOP_P_DEFAULT);
+    let model = arguments
+        .model
         .map(|x| x.to_string())
-        .unwrap_or_else(|| config.model.unwrap_or_else(|| String::from(DEFAULT_MODEL)));
+        .unwrap_or_else(|| config.model.unwrap_or_else(|| String::from(MODEL_DEFAULT)));
     let body = json!({ 
         "model": model, 
-        "prompt": prompt,  
+        "prompt": arguments.prompt.unwrap_or_default(),  
         "max_tokens": MAX_TOKENS, 
         "n": number, 
         "temperature": temperature, 
-        "top_p": top_p });
+        "top_p": top_p,
+    "echo": arguments.echo });
 
     let json_response = post_openai(config.token, COMPLETIONS_URL.to_string(), body)?;
     let response: Response =
@@ -98,7 +93,7 @@ pub fn completions(
         .map(|x| x.text)
         .collect::<Vec<String>>()
         .join("\n\n---");
-    let suffix = suffix.unwrap_or_else(|| String::from(""));
+    let suffix = arguments.suffix.unwrap_or_default();
 
     Ok(format!("{}{}", output, suffix))
 }
