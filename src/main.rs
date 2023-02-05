@@ -96,7 +96,7 @@ fn main() {
 
     match dispatch(arguments) {
         Ok(output) => {
-            println!("{}", output);
+            println!("{output}");
             std::process::exit(0);
         }
         Err(e) => {

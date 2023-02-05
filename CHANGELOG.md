@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add `--echo` option
+- Resolve new clippy warnings
 
 ## 2022-12-29 0.1.3
 

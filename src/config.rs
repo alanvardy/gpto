@@ -74,7 +74,7 @@ pub fn generate_path() -> Result<String, String> {
         .to_str()
         .ok_or_else(|| String::from("Could not convert config directory to string"))?
         .to_owned();
-    Ok(format!("{}/{}", config_directory, filename))
+    Ok(format!("{config_directory}/{filename}"))
 }
 
 pub fn get_input(desc: &str) -> Result<String, String> {
@@ -83,7 +83,7 @@ pub fn get_input(desc: &str) -> Result<String, String> {
     }
 
     let mut input = String::new();
-    println!("{}", desc);
+    println!("{desc}");
     io::stdin()
         .read_line(&mut input)
         .or(Err("error: unable to read user input"))?;

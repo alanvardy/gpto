@@ -95,7 +95,7 @@ pub fn completions(arguments: Arguments, config: Config) -> Result<String, Strin
         .join("\n\n---");
     let suffix = arguments.suffix.unwrap_or_default();
 
-    Ok(format!("{}{}", output, suffix))
+    Ok(format!("{output}{suffix}"))
 }
 pub fn models(config: Config) -> Result<String, String> {
     let json_response = get_openai(config.token, MODELS_URL.to_string())?;
@@ -113,8 +113,8 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
     #[cfg(test)]
     let openai_url: &str = &mockito::server_url();
 
-    let request_url = format!("{}{}", openai_url, url);
-    let authorization: &str = &format!("Bearer {}", token);
+    let request_url = format!("{openai_url}{url}");
+    let authorization: &str = &format!("Bearer {token}");
 
     let response = Client::new()
         .post(request_url)
@@ -138,8 +138,8 @@ fn get_openai(token: String, url: String) -> Result<String, String> {
     #[cfg(test)]
     let openai_url: &str = &mockito::server_url();
 
-    let request_url = format!("{}{}", openai_url, url);
-    let authorization: &str = &format!("Bearer {}", token);
+    let request_url = format!("{openai_url}{url}");
+    let authorization: &str = &format!("Bearer {token}");
 
     let response = Client::new()
         .get(request_url)
@@ -163,7 +163,7 @@ pub fn get_latest_version() -> Result<String, String> {
     #[cfg(test)]
     let cargo_url: &str = &mockito::server_url();
 
-    let request_url = format!("{}{}", cargo_url, VERSIONS_URL);
+    let request_url = format!("{cargo_url}{VERSIONS_URL}");
 
     let response = Client::new()
         .get(request_url)
