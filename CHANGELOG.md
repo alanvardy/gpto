@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2023-03-19 0.1.4
+
 - Add `--echo` option
 - Resolve new Clippy warnings
 - Add spinner effect while querying
