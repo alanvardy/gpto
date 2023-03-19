@@ -11,14 +11,13 @@ use crate::config::Config;
 use crate::Arguments;
 use crate::{MODEL_DEFAULT, NUMBER_DEFAULT, TEMPERATURE_DEFAULT, TOP_P_DEFAULT};
 
-#[cfg(test)]
-use mockito;
-
 // OPENAI URLS
 const COMPLETIONS_URL: &str = "/v1/completions";
 const MODELS_URL: &str = "/v1/models";
 
 const MAX_TOKENS: u32 = 1000;
+
+const SPINNER: Spinners = Spinners::Dots4;
 
 // CRATES.IO URLS
 const VERSIONS_URL: &str = "/v1/crates/gpto/versions";
@@ -108,16 +107,12 @@ pub fn models(config: Config) -> Result<String, String> {
 }
 
 fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<String, String> {
-    #[cfg(not(test))]
     let openai_url: &str = "https://api.openai.com";
-
-    #[cfg(test)]
-    let openai_url: &str = &mockito::server_url();
 
     let request_url = format!("{openai_url}{url}");
     let authorization: &str = &format!("Bearer {token}");
 
-    let mut sp = Spinner::new(Spinners::Dots4, "Querying API".into());
+    let mut sp = Spinner::new(SPINNER, "Querying API".into());
     let response = Client::new()
         .post(request_url)
         .header(CONTENT_TYPE, "application/json")
@@ -135,16 +130,11 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
 }
 
 fn get_openai(token: String, url: String) -> Result<String, String> {
-    #[cfg(not(test))]
     let openai_url: &str = "https://api.openai.com";
-
-    #[cfg(test)]
-    let openai_url: &str = &mockito::server_url();
-
     let request_url = format!("{openai_url}{url}");
     let authorization: &str = &format!("Bearer {token}");
 
-    let mut sp = Spinner::new(Spinners::Dots12, "Querying API".into());
+    let mut sp = Spinner::new(SPINNER, "Querying API".into());
     let response = Client::new()
         .get(request_url)
         .header(CONTENT_TYPE, "application/json")
@@ -162,11 +152,7 @@ fn get_openai(token: String, url: String) -> Result<String, String> {
 
 /// Get latest version number from Cargo.io
 pub fn get_latest_version() -> Result<String, String> {
-    #[cfg(not(test))]
     let cargo_url: &str = "https://crates.io/api";
-
-    #[cfg(test)]
-    let cargo_url: &str = &mockito::server_url();
 
     let request_url = format!("{cargo_url}{VERSIONS_URL}");
 
