@@ -4,11 +4,11 @@ version = "0.1.5"
 authors = ["Alan Vardy <alan@vardy.cc>"]
 edition = "2021"
 license = "MIT"
-description = "A tiny unofficial OpenAI GPT3 client"
+description = "A tiny unofficial OpenAI client"
 readme = "README.md"
 homepage = "https://github.com/alanvardy/gpto"
 repository = "https://github.com/alanvardy/gpto"
-keywords = ["cli", "openai", "client", "gpt3", "gpt-3"]
+keywords = ["cli", "openai", "client", "gpt3", "gpt-3", "gpt4", "gpt-4"]
 categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

@@ -2,12 +2,12 @@
 
 [![Build Status](https://github.com/alanvardy/gpto/workflows/ci/badge.svg)](https://github.com/alanvardy/gpto) [![codecov](https://codecov.io/gh/alanvardy/gpto/branch/master/graph/badge.svg?token=9FBJK1SU0K)](https://codecov.io/gh/alanvardy/gpto) [![Crates.io](https://img.shields.io/crates/v/gpto.svg)](https://crates.io/crates/gpto)
 
-An Unofficial OpenAI GPT3 Terminal Client
+An Unofficial OpenAI Terminal Client
 
 ```bash
 > gpto -h
 
-A tiny unofficial OpenAI GPT3 client
+A tiny unofficial OpenAI client
 
 Usage: gpto [OPTIONS]
 
@@ -24,13 +24,15 @@ Options:
                                            So 0.1 means only the tokens comprising the top 10% probability mass are considered.
                                            We generally recommend altering this or temperature but not both.
                                            Defaults to 1.0
-  -m, --model <model name>            Model to use for completion. Defaults to text-davinci-003. Use --models to see complete list.
+  -m, --model <model name>            
+                                          Model to use for completion. Defaults to gpt-3.5-turbo.
+                                          This CLI uses the /v1/chat/completions endpoint,
+                                          see https://platform.openai.com/docs/models/gpt-3 for models available
+                                          
   -o, --config <path to config file>  Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg
-  -d, --models                        Returns a list of models from OpenAI
-  -e, --echo                          Echo back the prompt in addition to the completion. Defaults to false
-  -h, --help                          Print help information
-  -V, --version                       Print version information
-```
+  -h, --help                          Print help
+  -V, --version                       Print version
+  ```
 
 [Learn more about how to use text completion](https://beta.openai.com/docs/guides/completion/introduction)
 
@@ -84,28 +86,13 @@ A: Dam!
 
 Get a completion with a different model (this example uses the leading code completion model). And yes, the generated code is not idiomatic!
 
-Read more about models [here](https://beta.openai.com/docs/models/overview)
+Read more about models [here](https://platform.openai.com/docs/models/gpt-3). This CLI app uses the `/v1/chat/completions` endpoint.
 
 ```bash
-> gpto -m code-davinci-002 -p language is elixir\nwrite a function that raises an error if the argument is not an integer and multiplies it by 2 if it is an integer
+> gpto -m gpt-4 -p language is elixir\nwrite a function that raises an error if the argument is not an integer and multiplies it by 2 if it is an integer
 
 def multiply_by_two(x)
   raise ArgumentError, "Argument is not an integer" unless x.is_a? Integer
   x * 2
 end
-```
-
-Give an exhaustive list of all models
-
-```bash
-> gpto --models
-
-Models: 
-
-babbage
-ada
-davinci
-babbage-code-search-code
-text-similarity-babbage-001
-... and so on
 ```

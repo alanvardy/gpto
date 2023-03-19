@@ -14,9 +14,12 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 const AUTHOR: &str = "Alan Vardy <alan@vardy.cc>";
 const ABOUT: &str = "A tiny unofficial OpenAI GPT3 client";
 
-pub const MODEL_DEFAULT: &str = "text-davinci-003";
-pub const MODEL_HELP: &str =
-    "Model to use for completion. Defaults to text-davinci-003. Use --models to see complete list.";
+pub const MODEL_DEFAULT: &str = "gpt-3.5-turbo";
+pub const MODEL_HELP: &str = "
+    Model to use for completion. Defaults to gpt-3.5-turbo.
+    This CLI uses the /v1/chat/completions endpoint,
+    see https://platform.openai.com/docs/models/gpt-3 for models available
+    ";
 
 pub const NUMBER_DEFAULT: u8 = 1;
 pub const TEMPERATURE_DEFAULT: f32 = 1.0;
@@ -40,7 +43,6 @@ pub const CONFIG_HELP: &str =
 pub const PROMPT_HELP: &str = "The prompt(s) to generate completions for";
 pub const NUMBER_HELP: &str = "How many completions to generate for each prompt. Defaults to 1";
 pub const ECHO_DEFAULT: bool = false;
-pub const ECHO_HELP: &str = "Echo back the prompt in addition to the completion. Defaults to false";
 pub const MODELS_HELP: &str = "Returns a list of models from OpenAI";
 
 pub struct Arguments<'a> {
@@ -51,8 +53,6 @@ pub struct Arguments<'a> {
     top_p: Option<f32>,
     config_path: Option<&'a str>,
     model: Option<&'a str>,
-    models: bool,
-    echo: bool,
 }
 
 fn main() {
@@ -78,15 +78,11 @@ fn main() {
             "path to config file",
             CONFIG_HELP,
         ))
-        .arg(flag_no_value("models", 'd', MODELS_HELP))
-        .arg(flag_no_value("echo", 'e', ECHO_HELP))
         .get_matches();
 
     let arguments = Arguments {
         prompt: join_string(matches.clone(), "prompt"),
         suffix: join_string(matches.clone(), "suffix"),
-        models: has_flag(matches.clone(), "models"),
-        echo: has_flag(matches.clone(), "echo"),
         config_path: matches.get_one::<String>("config").map(|s| s.as_str()),
         model: matches.get_one::<String>("model").map(|s| s.as_str()),
         number: matches.get_one::<u8>("number").map(|s| s.to_owned()),
@@ -111,50 +107,23 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
 
     match arguments {
         Arguments {
-            prompt: Some(_),
-            models: false,
-            ..
+            prompt: Some(_), ..
         } => request::completions(arguments, config),
         Arguments {
             prompt: None,
             config_path: _,
-            models: true,
-            echo: false,
-            model: _,
-            number: None,
-            suffix: None,
-            temperature: None,
-            top_p: None,
-        } => request::models(config),
-        Arguments {
-            prompt: None,
-            config_path: _,
-            models: false,
-            echo: false,
             model: _,
             number: None,
             suffix: None,
             temperature: None,
             top_p: None,
         } => Err(String::from(
-            "gtfo cannot be run without parameters. To see available parameters use --help",
+            "gtpo cannot be run without parameters. To see available parameters use --help",
         )),
         Arguments { .. } => Err(String::from(
             "Invalid parameters. To see available parameters use --help",
         )),
     }
-}
-
-fn flag_no_value(long: &'static str, short: char, help: &'static str) -> Arg {
-    Arg::new(long)
-        .short(short)
-        .long(long)
-        .value_parser(["yes", "no"])
-        .num_args(0..1)
-        .default_value("no")
-        .default_missing_value("yes")
-        .required(false)
-        .help(help)
 }
 
 fn flag_string_no_spaces(
@@ -201,10 +170,6 @@ fn flag_integer(long: &'static str, short: char, help: &'static str) -> Arg {
         .value_parser(clap::value_parser!(u8))
         .value_name("integer")
         .help(help)
-}
-
-fn has_flag(matches: ArgMatches, id: &'static str) -> bool {
-    matches.get_one::<String>(id) == Some(&String::from("yes"))
 }
 
 fn join_string(matches: ArgMatches, long: &str) -> Option<String> {
