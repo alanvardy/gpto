@@ -122,7 +122,7 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
         .send()
         .or(Err("Did not get response from server"))?;
     sp.stop();
-    println!("\n\n");
+    print!("\x1b[2K\r");
 
     if response.status().is_success() {
         Ok((response.text()).or(Err("Could not read response text"))?)
@@ -144,7 +144,7 @@ fn get_openai(token: String, url: String) -> Result<String, String> {
         .send()
         .or(Err("Did not get response from server"))?;
     sp.stop();
-    println!("\n\n");
+    print!("\x1b[2K\r");
 
     if response.status().is_success() {
         Ok((response.text()).or(Err("Could not read response text"))?)
