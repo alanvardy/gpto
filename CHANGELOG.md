@@ -5,6 +5,7 @@
 - Add `--echo` option
 - Resolve new Clippy warnings
 - Add spinner effect while querying
+- Remove `mockito` from dev dependencies
 
 ## 2022-12-29 0.1.3
 

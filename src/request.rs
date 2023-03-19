@@ -18,6 +18,7 @@ const MODELS_URL: &str = "/v1/models";
 const MAX_TOKENS: u32 = 1000;
 
 const SPINNER: Spinners = Spinners::Dots4;
+const MESSAGE: &str = "Querying API";
 
 // CRATES.IO URLS
 const VERSIONS_URL: &str = "/v1/crates/gpto/versions";
@@ -112,7 +113,7 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
     let request_url = format!("{openai_url}{url}");
     let authorization: &str = &format!("Bearer {token}");
 
-    let mut sp = Spinner::new(SPINNER, "Querying API".into());
+    let mut sp = Spinner::new(SPINNER, MESSAGE.into());
     let response = Client::new()
         .post(request_url)
         .header(CONTENT_TYPE, "application/json")
@@ -121,6 +122,7 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
         .send()
         .or(Err("Did not get response from server"))?;
     sp.stop();
+    println!("\n\n");
 
     if response.status().is_success() {
         Ok((response.text()).or(Err("Could not read response text"))?)
@@ -134,7 +136,7 @@ fn get_openai(token: String, url: String) -> Result<String, String> {
     let request_url = format!("{openai_url}{url}");
     let authorization: &str = &format!("Bearer {token}");
 
-    let mut sp = Spinner::new(SPINNER, "Querying API".into());
+    let mut sp = Spinner::new(SPINNER, MESSAGE.into());
     let response = Client::new()
         .get(request_url)
         .header(CONTENT_TYPE, "application/json")
@@ -142,6 +144,7 @@ fn get_openai(token: String, url: String) -> Result<String, String> {
         .send()
         .or(Err("Did not get response from server"))?;
     sp.stop();
+    println!("\n\n");
 
     if response.status().is_success() {
         Ok((response.text()).or(Err("Could not read response text"))?)
