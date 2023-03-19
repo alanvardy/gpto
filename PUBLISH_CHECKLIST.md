@@ -1,5 +1,13 @@
 # Publish Checklist
 
+## Setup gpto-bin
+
+```bash
+git clone ssh://aur@aur.archlinux.org/gpto-bin.git
+cd gpto-bin
+git remote add aur ssh://aur@aur.archlinux.org/gpto-bin.git
+```
+
 ## Publish to Cargo
 
 This checklist is just here for me to reduce the friction of publishing new versions.
@@ -51,6 +59,6 @@ mv PKGBUILD ../gpto-bin/
 rm *.tar.gz
 cd ../gpto-bin/
 git add .
-git commit -m v0.1.3
+git commit -m v0.1.4
 git push aur
 ```
