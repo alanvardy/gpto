@@ -5,6 +5,7 @@ use reqwest::header::CONTENT_TYPE;
 use reqwest::header::USER_AGENT;
 use serde::Deserialize;
 use serde_json::json;
+use spinners::{Spinner, Spinners};
 
 use crate::config::Config;
 use crate::Arguments;
@@ -116,6 +117,7 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
     let request_url = format!("{openai_url}{url}");
     let authorization: &str = &format!("Bearer {token}");
 
+    let mut sp = Spinner::new(Spinners::Dots4, "Querying API".into());
     let response = Client::new()
         .post(request_url)
         .header(CONTENT_TYPE, "application/json")
@@ -123,6 +125,7 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
         .json(&body)
         .send()
         .or(Err("Did not get response from server"))?;
+    sp.stop();
 
     if response.status().is_success() {
         Ok((response.text()).or(Err("Could not read response text"))?)
@@ -141,12 +144,14 @@ fn get_openai(token: String, url: String) -> Result<String, String> {
     let request_url = format!("{openai_url}{url}");
     let authorization: &str = &format!("Bearer {token}");
 
+    let mut sp = Spinner::new(Spinners::Dots12, "Querying API".into());
     let response = Client::new()
         .get(request_url)
         .header(CONTENT_TYPE, "application/json")
         .header(AUTHORIZATION, authorization)
         .send()
         .or(Err("Did not get response from server"))?;
+    sp.stop();
 
     if response.status().is_success() {
         Ok((response.text()).or(Err("Could not read response text"))?)

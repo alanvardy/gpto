@@ -3,7 +3,8 @@
 ## Unreleased
 
 - Add `--echo` option
-- Resolve new clippy warnings
+- Resolve new Clippy warnings
+- Add spinner effect while querying
 
 ## 2022-12-29 0.1.3
 
