@@ -8,7 +8,7 @@ description = "A tiny unofficial OpenAI client"
 readme = "README.md"
 homepage = "https://github.com/alanvardy/gpto"
 repository = "https://github.com/alanvardy/gpto"
-keywords = ["cli", "openai", "client", "gpt3", "gpt-3", "gpt4", "gpt-4"]
+keywords = ["cli", "openai", "client", "gpt"]
 categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
