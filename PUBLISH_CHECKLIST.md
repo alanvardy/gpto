@@ -40,7 +40,7 @@ cargo aur
 
 10. [Create a new release](https://github.com/alanvardy/gpto/releases/new)
 
-- Make sure to use the label and title in format `v0.1.5`
+- Make sure to use the label and title in format `v0.1.6`
 - Add binary from gpto directory
 
 11. Publish to Cargo
@@ -65,6 +65,6 @@ mv PKGBUILD ../gpto-bin/
 rm *.tar.gz
 cd ../gpto-bin/
 git add .
-git commit -m v0.1.5
+git commit -m v0.1.6
 git push aur
 ```

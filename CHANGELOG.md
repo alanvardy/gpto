@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2023-04-05 0.1.6
+
 - Set the default model to `gpt-3.5-turbo`
 - Use chat completions endpoint (so that GPT-4 can be used)
 - Remove the models flag as it no longer applies for the chat completions endpoint
