@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+
+use inquire::Text;
 use reqwest::blocking::Client;
 use reqwest::header::AUTHORIZATION;
 use reqwest::header::CONTENT_TYPE;
@@ -61,6 +64,64 @@ struct Version {
     num: String,
 }
 
+/// Start an interactive conversation
+pub fn conversation(arguments: Arguments, config: Config) -> Result<String, String> {
+    let number = arguments.number.unwrap_or(NUMBER_DEFAULT);
+    let temperature = arguments.temperature.unwrap_or(TEMPERATURE_DEFAULT);
+    let top_p = arguments.top_p.unwrap_or(TOP_P_DEFAULT);
+    let model = arguments
+        .model
+        .map(|x| x.to_string())
+        .unwrap_or_else(|| config.model.unwrap_or_else(|| String::from(MODEL_DEFAULT)));
+
+    let system_content = arguments.conversation.unwrap_or_default();
+    let mut messages: Vec<HashMap<String, String>> = Vec::new();
+    put_message(&mut messages, "system", system_content);
+
+    loop {
+        let input = Text::new("Ask a question or quit > ")
+            .prompt()
+            .map_err(|e| e.to_string())?;
+
+        if input.as_str() == "quit" || input.as_str() == "q" {
+            break;
+        }
+
+        put_message(&mut messages, "user", input);
+
+        let body = json!({ 
+            "model": model, 
+            "max_tokens": MAX_TOKENS,
+            "messages": messages,
+            "n": number, 
+            "temperature": temperature, 
+            "top_p": top_p});
+
+        let json_response = post_openai(config.token.clone(), COMPLETIONS_URL.to_string(), body)?;
+        let response: Response = serde_json::from_str(&json_response)
+            .or(Err("Could not serialize response from chat completion"))?;
+
+        let output = response
+            .choices
+            .into_iter()
+            .map(|x| x.message.content)
+            .collect::<Vec<String>>()
+            .join("\n\n---\n\n");
+
+        println!("{output}\n");
+        put_message(&mut messages, "assistant", output)
+    }
+
+    Ok("Done".to_string())
+}
+
+fn put_message(messages: &mut Vec<HashMap<String, String>>, role: &str, content: String) {
+    let mut message: HashMap<String, String> = HashMap::new();
+    message.insert("role".to_string(), role.to_string());
+    message.insert("content".to_string(), content);
+    messages.push(message);
+}
+
 /// Get completions from input prompt
 pub fn completions(arguments: Arguments, config: Config) -> Result<String, String> {
     let number = arguments.number.unwrap_or(NUMBER_DEFAULT);
@@ -87,7 +148,7 @@ pub fn completions(arguments: Arguments, config: Config) -> Result<String, Strin
         .into_iter()
         .map(|x| x.message.content)
         .collect::<Vec<String>>()
-        .join("\n\n---");
+        .join("\n\n---\n\n");
     let suffix = arguments.suffix.unwrap_or_default();
 
     Ok(format!("{output}{suffix}"))

@@ -6,6 +6,7 @@
 - Use chat completions endpoint (so that GPT-4 can be used)
 - Remove the models flag as it no longer applies for the chat completions endpoint
 - Remove the echo flag as it is no longer supported by the new endpoint
+- Add `--conversation` option
 
 ## 2023-03-19 0.1.5
 
