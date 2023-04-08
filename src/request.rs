@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::env;
 
 use inquire::Text;
 use reqwest::blocking::Client;
@@ -13,16 +14,13 @@ use crate::config::Config;
 use crate::Arguments;
 use crate::{MODEL_DEFAULT, NUMBER_DEFAULT, TEMPERATURE_DEFAULT, TOP_P_DEFAULT};
 
-// OPENAI URLS
 const COMPLETIONS_URL: &str = "/v1/chat/completions";
+const VERSIONS_URL: &str = "/v1/crates/gpto/versions";
 
 const MAX_TOKENS: u32 = 1000;
-
 const SPINNER: Spinners = Spinners::Dots4;
 const MESSAGE: &str = "Querying API";
 
-// CRATES.IO URLS
-const VERSIONS_URL: &str = "/v1/crates/gpto/versions";
 #[derive(Deserialize)]
 #[allow(dead_code)]
 struct Usage {
@@ -160,7 +158,7 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
     let request_url = format!("{openai_url}{url}");
     let authorization: &str = &format!("Bearer {token}");
 
-    let mut sp = Spinner::new(SPINNER, MESSAGE.into());
+    let spinner = maybe_start_spinner();
     let response = Client::new()
         .post(request_url)
         .header(CONTENT_TYPE, "application/json")
@@ -168,8 +166,7 @@ fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<St
         .json(&body)
         .send()
         .or(Err("Did not get response from server"))?;
-    sp.stop();
-    print!("\x1b[2K\r");
+    maybe_stop_spinner(spinner);
 
     if response.status().is_success() {
         Ok((response.text()).or(Err("Could not read response text"))?)
@@ -198,4 +195,20 @@ pub fn get_latest_version() -> Result<String, String> {
     } else {
         Err(format!("Error: {:#?}", response.text()))
     }
+}
+
+fn maybe_start_spinner() -> Option<Spinner> {
+    match env::var("DISABLE_SPINNER") {
+        Ok(_) => None,
+        _ => {
+            let sp = Spinner::new(SPINNER, MESSAGE.into());
+            Some(sp)
+        }
+    }
+}
+fn maybe_stop_spinner(spinner: Option<Spinner>) {
+    if let Some(mut sp) = spinner {
+        sp.stop();
+        print!("\x1b[2K\r");
+    };
 }
