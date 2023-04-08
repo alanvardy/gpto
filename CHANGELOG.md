@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Disable spinners with env `DISABLE_SPINNER`
+
 ## 2023-04-05 0.1.6
 
 - Set the default model to `gpt-3.5-turbo`

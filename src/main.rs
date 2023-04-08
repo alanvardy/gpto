@@ -15,25 +15,13 @@ const AUTHOR: &str = "Alan Vardy <alan@vardy.cc>";
 const ABOUT: &str = "A tiny unofficial OpenAI client";
 
 pub const MODEL_DEFAULT: &str = "gpt-3.5-turbo";
-pub const MODEL_HELP: &str = "
-    Model to use for completion. Defaults to gpt-3.5-turbo.
-    This CLI uses the /v1/chat/completions endpoint,
-    see https://platform.openai.com/docs/models/gpt-3 for models available
-    ";
+pub const MODEL_HELP: &str = "Model to use for completion. Defaults to gpt-3.5-turbo. This CLI uses the /v1/chat/completions endpoint, see https://platform.openai.com/docs/models/gpt-3 for models available";
 
 pub const NUMBER_DEFAULT: u8 = 1;
 pub const TEMPERATURE_DEFAULT: f32 = 1.0;
-pub const TEMPERATURE_HELP: &str =
-    "What sampling temperature to use. 
-     Higher values means the model will take more risks. 
-     Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
-     Defaults to 1.0";
+pub const TEMPERATURE_HELP: &str = "What sampling temperature to use. Higher values means the model will take more risks. Try 0.9 for more creative applications, and 0 (argmax sampling)    for ones with a well-defined answer. Defaults to 1.0";
 pub const TOP_P_DEFAULT: f32 = 1.0;
-pub const TOP_P_HELP: &str = "An alternative to sampling with temperature, called nucleus sampling,
-     where the model considers the results of the tokens with top_p probability mass.
-     So 0.1 means only the tokens comprising the top 10% probability mass are considered.
-     We generally recommend altering this or temperature but not both.
-     Defaults to 1.0";
+pub const TOP_P_HELP: &str = "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both. Defaults to 1.0";
 
 pub const SUFFIX_HELP: &str =
     "The suffix that comes after a completion of inserted text. Defaults to an empty string";
