@@ -95,7 +95,12 @@ pub fn conversation(arguments: Arguments, config: Config) -> Result<String, Stri
             "temperature": temperature, 
             "top_p": top_p});
 
-        let json_response = post_openai(config.token.clone(), COMPLETIONS_URL.to_string(), body)?;
+        let json_response = post_openai(
+            config.token.clone(),
+            COMPLETIONS_URL.to_string(),
+            body,
+            arguments.disable_spinner,
+        )?;
         let response: Response = serde_json::from_str(&json_response)
             .or(Err("Could not serialize response from chat completion"))?;
 
@@ -137,7 +142,12 @@ pub fn completions(arguments: Arguments, config: Config) -> Result<String, Strin
         "temperature": temperature, 
         "top_p": top_p});
 
-    let json_response = post_openai(config.token, COMPLETIONS_URL.to_string(), body)?;
+    let json_response = post_openai(
+        config.token,
+        COMPLETIONS_URL.to_string(),
+        body,
+        arguments.disable_spinner,
+    )?;
     let response: Response = serde_json::from_str(&json_response)
         .or(Err("Could not serialize response from chat completion"))?;
 
@@ -152,13 +162,18 @@ pub fn completions(arguments: Arguments, config: Config) -> Result<String, Strin
     Ok(format!("{output}{suffix}"))
 }
 
-fn post_openai(token: String, url: String, body: serde_json::Value) -> Result<String, String> {
+fn post_openai(
+    token: String,
+    url: String,
+    body: serde_json::Value,
+    disable_spinner: bool,
+) -> Result<String, String> {
     let openai_url: &str = "https://api.openai.com";
 
     let request_url = format!("{openai_url}{url}");
     let authorization: &str = &format!("Bearer {token}");
 
-    let spinner = maybe_start_spinner();
+    let spinner = maybe_start_spinner(disable_spinner);
     let response = Client::new()
         .post(request_url)
         .header(CONTENT_TYPE, "application/json")
@@ -197,15 +212,15 @@ pub fn get_latest_version() -> Result<String, String> {
     }
 }
 
-fn maybe_start_spinner() -> Option<Spinner> {
-    match env::var("DISABLE_SPINNER") {
-        Ok(_) => None,
-        _ => {
-            let sp = Spinner::new(SPINNER, MESSAGE.into());
-            Some(sp)
-        }
+fn maybe_start_spinner(disable_spinner: bool) -> Option<Spinner> {
+    if env::var("DISABLE_SPINNER").is_ok() || disable_spinner {
+        None
+    } else {
+        let sp = Spinner::new(SPINNER, MESSAGE.into());
+        Some(sp)
     }
 }
+
 fn maybe_stop_spinner(spinner: Option<Spinner>) {
     if let Some(mut sp) = spinner {
         sp.stop();

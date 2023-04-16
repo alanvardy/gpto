@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+## 2023-04-16 0.1.7
+
 - Disable spinners with env `DISABLE_SPINNER`
+- Disable spinners with flag `x`
+- `prompt` also accepts text from stdin
 
 ## 2023-04-05 0.1.6
 

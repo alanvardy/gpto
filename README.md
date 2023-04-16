@@ -12,31 +12,22 @@ A tiny unofficial OpenAI client
 Usage: gpto [OPTIONS]
 
 Options:
-  -p, --prompt <Prompt text>...
-          The prompt(s) to generate completions for
+  -p, --prompt [<Prompt text>...]
+          The prompt(s) to generate completions for. Also accepts text from stdin
+  -x, --disable spinner
+          Disable the spinner and message when querying
   -c, --conversation [<Instructions to bot>...]
           Start a conversation with an optional description of the bot's role
   -s, --suffix <Text to be appended to end of response>...
           The suffix that comes after a completion of inserted text. Defaults to an empty string
   -t, --temperature <float>
-          What sampling temperature to use. 
-               Higher values means the model will take more risks. 
-               Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer. 
-               Defaults to 1.0
+          What sampling temperature to use. Higher values means the model will take more risks. Try 0.9 for more creative applications, and 0 (argmax sampling)    for ones with a well-defined answer. Defaults to 1.0
   -n, --number <integer>
           How many completions to generate for each prompt. Defaults to 1
   -k, --top_p <float>
-          An alternative to sampling with temperature, called nucleus sampling,
-               where the model considers the results of the tokens with top_p probability mass.
-               So 0.1 means only the tokens comprising the top 10% probability mass are considered.
-               We generally recommend altering this or temperature but not both.
-               Defaults to 1.0
+          An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both. Defaults to 1.0
   -m, --model <model name>
-          
-              Model to use for completion. Defaults to gpt-3.5-turbo.
-              This CLI uses the /v1/chat/completions endpoint,
-              see https://platform.openai.com/docs/models/gpt-3 for models available
-              
+          Model to use for completion. Defaults to gpt-3.5-turbo. This CLI uses the /v1/chat/completions endpoint, see https://platform.openai.com/docs/models/gpt-3 for models available
   -o, --config <path to config file>
           Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg
   -h, --help
@@ -93,6 +84,14 @@ Get a completion with default parameters
 
 Q: What did the fish say when it hit the wall?
 A: Dam!
+```
+
+Get completions using text from stdin (without displaying the spinner)
+
+```bash
+> echo "what is one plus one" | gpto -xp
+
+Two
 ```
 
 Get a completion with a different model (this example uses the leading code completion model). And yes, the generated code is not idiomatic!
