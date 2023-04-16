@@ -8,6 +8,8 @@ echo "== TESTING -p tell a great joke -t 0 ==" && \
 cargo run -- -p tell a great joke -t 0 && \
 echo "== TESTING -m gpt-3.5-turbo-0301 ==" && \
 cargo run -- -m gpt-3.5-turbo-0301 -p language is elixir create a function that adds two numbers && \
+echo "== TESTING -p with stdin ==" && \
+echo "what is one plus one" | cargo run -- -xp && \
 echo "== TESTING -c ==" && \
 cargo run -- -c && \
 echo "== TESTING -c Roleplay as Shakespeare ==" && \

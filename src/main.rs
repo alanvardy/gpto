@@ -3,6 +3,8 @@ extern crate matches;
 
 extern crate clap;
 
+use std::io;
+
 use clap::{Arg, ArgAction, ArgMatches, Command};
 use colored::*;
 
@@ -28,7 +30,8 @@ pub const SUFFIX_HELP: &str =
 
 pub const CONFIG_HELP: &str =
     "Absolute path of configuration. Defaults to $XDG_CONFIG_HOME/gpto.cfg";
-pub const PROMPT_HELP: &str = "The prompt(s) to generate completions for";
+pub const PROMPT_HELP: &str =
+    "The prompt(s) to generate completions for. Also accepts text from stdin";
 pub const CONVERSATION_HELP: &str =
     "Start a conversation with an optional description of the bot's role";
 pub const NUMBER_HELP: &str = "How many completions to generate for each prompt. Defaults to 1";
@@ -37,6 +40,7 @@ pub const MODELS_HELP: &str = "Returns a list of models from OpenAI";
 
 pub struct Arguments<'a> {
     prompt: Option<String>,
+    disable_spinner: bool,
     conversation: Option<String>,
     suffix: Option<String>,
     number: Option<u8>,
@@ -52,7 +56,18 @@ fn main() {
         .author(AUTHOR)
         .about(ABOUT);
     let matches = app
-        .arg(flag_string("prompt", 'p', "Prompt text", PROMPT_HELP))
+        .arg(flag_nullable_string(
+            "prompt",
+            'p',
+            "Prompt text",
+            PROMPT_HELP,
+        ))
+        .arg(flag_arg(
+            "disable spinner",
+            'x',
+            "disable spinner",
+            "Disable the spinner and message when querying",
+        ))
         .arg(flag_nullable_string(
             "conversation",
             'c',
@@ -83,7 +98,8 @@ fn main() {
         .get_matches();
 
     let arguments = Arguments {
-        prompt: join_string(matches.clone(), "prompt"),
+        disable_spinner: has_flag(matches.clone(), "disable spinner"),
+        prompt: string_or_stdin(matches.clone()),
         suffix: join_string(matches.clone(), "suffix"),
         conversation: join_string(matches.clone(), "conversation"),
         config_path: matches.get_one::<String>("config").map(|s| s.as_str()),
@@ -120,6 +136,7 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             ..
         } => request::conversation(arguments, config),
         Arguments {
+            disable_spinner: _,
             prompt: None,
             config_path: _,
             model: _,
@@ -205,4 +222,33 @@ fn join_string(matches: ArgMatches, long: &str) -> Option<String> {
     matches
         .get_many(long)
         .map(|values| values.cloned().collect::<Vec<String>>().join(" "))
+}
+fn string_or_stdin(matches: ArgMatches) -> Option<String> {
+    let result = join_string(matches, "prompt");
+    match result.clone() {
+        Some(string) => {
+            if string.is_empty() {
+                let mut buffer = String::new();
+                io::stdin().read_line(&mut buffer).unwrap();
+                Some(buffer)
+            } else {
+                result
+            }
+        }
+        None => None,
+    }
+}
+fn flag_arg(id: &'static str, short: char, long: &'static str, help: &'static str) -> Arg {
+    Arg::new(id)
+        .short(short)
+        .long(long)
+        .value_parser(["yes", "no"])
+        .num_args(0..1)
+        .default_value("no")
+        .default_missing_value("yes")
+        .required(false)
+        .help(help)
+}
+fn has_flag(matches: ArgMatches, id: &'static str) -> bool {
+    matches.get_one::<String>(id) == Some(&String::from("yes"))
 }
