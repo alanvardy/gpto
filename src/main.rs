@@ -37,11 +37,14 @@ pub const CONVERSATION_HELP: &str =
 pub const NUMBER_HELP: &str = "How many completions to generate for each prompt. Defaults to 1";
 pub const ECHO_DEFAULT: bool = false;
 pub const MODELS_HELP: &str = "Returns a list of models from OpenAI";
+pub const ENDPOINT_HELP: &str =
+    "endpoint to be used instead of OpenAIs, i.e. http://localhost:11434";
 
 pub struct Arguments<'a> {
     prompt: Option<String>,
     disable_spinner: bool,
     conversation: Option<String>,
+    endpoint: Option<String>,
     suffix: Option<String>,
     number: Option<u8>,
     temperature: Option<f32>,
@@ -80,6 +83,7 @@ fn main() {
             "Text to be appended to end of response",
             SUFFIX_HELP,
         ))
+        .arg(flag_string("endpoint", 'e', "url", ENDPOINT_HELP))
         .arg(flag_float("temperature", 't', TEMPERATURE_HELP))
         .arg(flag_integer("number", 'n', NUMBER_HELP))
         .arg(flag_float("top_p", 'k', TOP_P_HELP))
@@ -102,6 +106,7 @@ fn main() {
         prompt: string_or_stdin(matches.clone()),
         suffix: join_string(matches.clone(), "suffix"),
         conversation: join_string(matches.clone(), "conversation"),
+        endpoint: join_string(matches.clone(), "conversation"),
         config_path: matches.get_one::<String>("config").map(|s| s.as_str()),
         model: matches.get_one::<String>("model").map(|s| s.as_str()),
         number: matches.get_one::<u8>("number").map(|s| s.to_owned()),
@@ -145,6 +150,7 @@ fn dispatch(arguments: Arguments) -> Result<String, String> {
             temperature: None,
             top_p: None,
             conversation: None,
+            endpoint: None,
         } => Err(String::from(
             "gtpo cannot be run without parameters. To see available parameters use --help",
         )),

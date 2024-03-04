@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add custom endpoints
+
 ## 2023-04-16 0.1.7
 
 - Disable spinners with env `DISABLE_SPINNER`

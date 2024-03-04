@@ -16,6 +16,7 @@ pub struct Config {
     /// Path to config file
     pub path: String,
     pub model: Option<String>,
+    pub endpoint: Option<String>,
 }
 
 impl Config {
@@ -24,6 +25,7 @@ impl Config {
             path: generate_path()?,
             token: String::from(token),
             model: None,
+            endpoint: None,
         })
     }
 
@@ -160,6 +162,7 @@ mod tests {
                 model: None,
                 token: String::from("faketoken"),
                 path: generate_path().unwrap(),
+                endpoint: None,
             })
         );
         delete_config(&path);
@@ -173,6 +176,7 @@ mod tests {
                 model: None,
                 token: String::from("alreadycreated"),
                 path: generate_path().unwrap(),
+                endpoint: None,
             })
         );
         delete_config(&path);
@@ -187,6 +191,7 @@ mod tests {
             model: None,
             token: String::from("23984719029"),
             path: String::from("/home/vardy/dev/gpto/tests/gpto.cfg"),
+            endpoint: None,
         };
         assert_eq!(loaded_config, config);
     }
