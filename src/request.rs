@@ -16,6 +16,7 @@ use crate::{MODEL_DEFAULT, NUMBER_DEFAULT, TEMPERATURE_DEFAULT, TOP_P_DEFAULT};
 
 const COMPLETIONS_URL: &str = "/v1/chat/completions";
 const VERSIONS_URL: &str = "/v1/crates/gpto/versions";
+const OPENAI_URL: &str = "https://api.openai.com";
 
 const MAX_TOKENS: u32 = 1000;
 const SPINNER: Spinners = Spinners::Dots4;
@@ -95,12 +96,14 @@ pub fn conversation(arguments: Arguments, config: Config) -> Result<String, Stri
             "temperature": temperature, 
             "top_p": top_p});
 
-        let json_response = post_openai(
-            config.token.clone(),
-            COMPLETIONS_URL.to_string(),
-            body,
-            arguments.disable_spinner,
-        )?;
+        let url = format!(
+            "{}{}",
+            config.endpoint.clone().unwrap_or(String::from(OPENAI_URL)),
+            COMPLETIONS_URL
+        );
+
+        let json_response =
+            post_openai(config.token.clone(), url, body, arguments.disable_spinner)?;
         let response: Response = serde_json::from_str(&json_response)
             .or(Err("Could not serialize response from chat completion"))?;
 
@@ -142,12 +145,12 @@ pub fn completions(arguments: Arguments, config: Config) -> Result<String, Strin
         "temperature": temperature, 
         "top_p": top_p});
 
-    let json_response = post_openai(
-        config.token,
-        COMPLETIONS_URL.to_string(),
-        body,
-        arguments.disable_spinner,
-    )?;
+    let url = format!(
+        "{}{}",
+        config.endpoint.clone().unwrap_or(String::from(OPENAI_URL)),
+        COMPLETIONS_URL
+    );
+    let json_response = post_openai(config.token, url, body, arguments.disable_spinner)?;
     let response: Response = serde_json::from_str(&json_response)
         .or(Err("Could not serialize response from chat completion"))?;
 
@@ -168,14 +171,11 @@ fn post_openai(
     body: serde_json::Value,
     disable_spinner: bool,
 ) -> Result<String, String> {
-    let openai_url: &str = "https://api.openai.com";
-
-    let request_url = format!("{openai_url}{url}");
     let authorization: &str = &format!("Bearer {token}");
 
     let spinner = maybe_start_spinner(disable_spinner);
     let response = Client::new()
-        .post(request_url)
+        .post(url)
         .header(CONTENT_TYPE, "application/json")
         .header(AUTHORIZATION, authorization)
         .json(&body)
