@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+## 2024-03-28 0.1.8
+
 - Add custom endpoints
+- Added ability to change timeout in `gpto.cfg`
+- Pretty print config on creation
 
 ## 2023-04-16 0.1.7
 

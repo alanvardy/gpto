@@ -17,6 +17,7 @@ pub struct Config {
     pub path: String,
     pub model: Option<String>,
     pub endpoint: Option<String>,
+    pub timeout: Option<u64>,
 }
 
 impl Config {
@@ -26,11 +27,13 @@ impl Config {
             token: String::from(token),
             model: None,
             endpoint: None,
+            timeout: None,
         })
     }
 
     pub fn create(self) -> Result<Config, String> {
-        let json = json!(self).to_string();
+        let json = json!(self);
+        let json = serde_json::to_string_pretty(&json).or(Err("Could not convert to JSON"))?;
         let mut file = fs::File::create(&self.path).or(Err("Could not create file"))?;
         file.write_all(json.as_bytes())
             .or(Err("Could not write to file"))?;
@@ -163,6 +166,7 @@ mod tests {
                 token: String::from("faketoken"),
                 path: generate_path().unwrap(),
                 endpoint: None,
+                timeout: None,
             })
         );
         delete_config(&path);
@@ -177,6 +181,7 @@ mod tests {
                 token: String::from("alreadycreated"),
                 path: generate_path().unwrap(),
                 endpoint: None,
+                timeout: None,
             })
         );
         delete_config(&path);
@@ -192,6 +197,7 @@ mod tests {
             token: String::from("23984719029"),
             path: String::from("/home/vardy/dev/gpto/tests/gpto.cfg"),
             endpoint: None,
+            timeout: None,
         };
         assert_eq!(loaded_config, config);
     }
