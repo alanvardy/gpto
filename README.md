@@ -110,3 +110,7 @@ end
 ## Disabling the spinners
 
 If you are using vim or helix and calling this application from within them the spinners will interfere with the output, You can disable the spinner by setting the environment `DISABLE_SPINNER` to any value. i.e. `DISABLE_SPINNER=1 gpto -p This is a prompt`
+
+## Setting timeout
+
+Timeout is 30s by default, this can be altered by changing the `timeout` option in `gpto.cfg`

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::env;
+use std::time::Duration;
 
 use inquire::Text;
 use reqwest::blocking::Client;
@@ -102,8 +103,13 @@ pub fn conversation(arguments: Arguments, config: Config) -> Result<String, Stri
             COMPLETIONS_URL
         );
 
-        let json_response =
-            post_openai(config.token.clone(), url, body, arguments.disable_spinner)?;
+        let json_response = post_openai(
+            config.token.clone(),
+            url,
+            body,
+            arguments.disable_spinner,
+            config.timeout,
+        )?;
         let response: Response = serde_json::from_str(&json_response)
             .or(Err("Could not serialize response from chat completion"))?;
 
@@ -150,7 +156,13 @@ pub fn completions(arguments: Arguments, config: Config) -> Result<String, Strin
         config.endpoint.clone().unwrap_or(String::from(OPENAI_URL)),
         COMPLETIONS_URL
     );
-    let json_response = post_openai(config.token, url, body, arguments.disable_spinner)?;
+    let json_response = post_openai(
+        config.token,
+        url,
+        body,
+        arguments.disable_spinner,
+        config.timeout,
+    )?;
     let response: Response = serde_json::from_str(&json_response)
         .or(Err("Could not serialize response from chat completion"))?;
 
@@ -170,12 +182,15 @@ fn post_openai(
     url: String,
     body: serde_json::Value,
     disable_spinner: bool,
+    timeout: Option<u64>,
 ) -> Result<String, String> {
     let authorization: &str = &format!("Bearer {token}");
+    let timeout = Duration::from_secs(timeout.unwrap_or(30));
 
     let spinner = maybe_start_spinner(disable_spinner);
     let response = Client::new()
         .post(url)
+        .timeout(timeout)
         .header(CONTENT_TYPE, "application/json")
         .header(AUTHORIZATION, authorization)
         .json(&body)
