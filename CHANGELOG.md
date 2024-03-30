@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Show better errors when no response is received
+
 ## 2024-03-28 0.1.8
 
 - Add custom endpoints

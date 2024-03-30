@@ -195,7 +195,7 @@ fn post_openai(
         .header(AUTHORIZATION, authorization)
         .json(&body)
         .send()
-        .or(Err("Did not get response from server"))?;
+        .map_err(|e| format!("Did not get response from server\n{:?}", e))?;
     maybe_stop_spinner(spinner);
 
     if response.status().is_success() {
