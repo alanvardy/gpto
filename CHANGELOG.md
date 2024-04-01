@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Breaking changes to API, `prompt` and `conversation` are now sub commands
+- Deprecated null values in config, please remove.
 - Show better errors when no response is received
 
 ## 2024-03-28 0.1.8

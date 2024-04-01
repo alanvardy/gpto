@@ -11,13 +11,12 @@ use serde::Deserialize;
 use serde_json::json;
 use spinners::{Spinner, Spinners};
 
-use crate::config::Config;
-use crate::Arguments;
-use crate::{MODEL_DEFAULT, NUMBER_DEFAULT, TEMPERATURE_DEFAULT, TOP_P_DEFAULT};
+use crate::config;
+
+use crate::Cli;
 
 const COMPLETIONS_URL: &str = "/v1/chat/completions";
 const VERSIONS_URL: &str = "/v1/crates/gpto/versions";
-const OPENAI_URL: &str = "https://api.openai.com";
 
 const MAX_TOKENS: u32 = 1000;
 const SPINNER: Spinners = Spinners::Dots4;
@@ -65,18 +64,14 @@ struct Version {
 }
 
 /// Start an interactive conversation
-pub fn conversation(arguments: Arguments, config: Config) -> Result<String, String> {
-    let number = arguments.number.unwrap_or(NUMBER_DEFAULT);
-    let temperature = arguments.temperature.unwrap_or(TEMPERATURE_DEFAULT);
-    let top_p = arguments.top_p.unwrap_or(TOP_P_DEFAULT);
-    let model = arguments
-        .model
-        .map(|x| x.to_string())
-        .unwrap_or_else(|| config.model.unwrap_or_else(|| String::from(MODEL_DEFAULT)));
+pub fn conversation(cli: Cli, instructions: &str) -> Result<String, String> {
+    let config = config::get_or_create(cli.config)?;
 
-    let system_content = arguments.conversation.unwrap_or_default();
     let mut messages: Vec<HashMap<String, String>> = Vec::new();
-    put_message(&mut messages, "system", system_content);
+    put_message(&mut messages, "system", instructions);
+
+    let model = cli.model.unwrap_or(config.model());
+    let endpoint = cli.endpoint.unwrap_or(config.endpoint());
 
     loop {
         let input = Text::new("Ask a question or quit > ")
@@ -87,28 +82,24 @@ pub fn conversation(arguments: Arguments, config: Config) -> Result<String, Stri
             break;
         }
 
-        put_message(&mut messages, "user", input);
+        put_message(&mut messages, "user", &input);
 
         let body = json!({ 
             "model": model, 
             "max_tokens": MAX_TOKENS,
             "messages": messages,
-            "n": number, 
-            "temperature": temperature, 
-            "top_p": top_p});
+            "n": cli.number, 
+            "temperature": cli.temperature, 
+            "top_p": cli.top_p});
 
-        let url = format!(
-            "{}{}",
-            config.endpoint.clone().unwrap_or(String::from(OPENAI_URL)),
-            COMPLETIONS_URL
-        );
+        let url = format!("{}{}", endpoint, COMPLETIONS_URL);
 
         let json_response = post_openai(
             config.token.clone(),
             url,
             body,
-            arguments.disable_spinner,
-            config.timeout,
+            cli.disable_spinner,
+            config.timeout(),
         )?;
         let response: Response = serde_json::from_str(&json_response)
             .or(Err("Could not serialize response from chat completion"))?;
@@ -121,48 +112,35 @@ pub fn conversation(arguments: Arguments, config: Config) -> Result<String, Stri
             .join("\n\n---\n\n");
 
         println!("{output}\n");
-        put_message(&mut messages, "assistant", output)
+        put_message(&mut messages, "assistant", &output)
     }
 
     Ok("Done".to_string())
 }
 
-fn put_message(messages: &mut Vec<HashMap<String, String>>, role: &str, content: String) {
+fn put_message(messages: &mut Vec<HashMap<String, String>>, role: &str, content: &str) {
     let mut message: HashMap<String, String> = HashMap::new();
     message.insert("role".to_string(), role.to_string());
-    message.insert("content".to_string(), content);
+    message.insert("content".to_string(), content.to_string());
     messages.push(message);
 }
 
 /// Get completions from input prompt
-pub fn completions(arguments: Arguments, config: Config) -> Result<String, String> {
-    let number = arguments.number.unwrap_or(NUMBER_DEFAULT);
-    let temperature = arguments.temperature.unwrap_or(TEMPERATURE_DEFAULT);
-    let top_p = arguments.top_p.unwrap_or(TOP_P_DEFAULT);
-    let model = arguments
-        .model
-        .map(|x| x.to_string())
-        .unwrap_or_else(|| config.model.unwrap_or_else(|| String::from(MODEL_DEFAULT)));
-    let body = json!({ 
+pub fn completions(cli: Cli, text: String) -> Result<String, String> {
+    let config = config::get_or_create(cli.config)?;
+    let model = cli.model.unwrap_or(config.model());
+    let endpoint = cli.endpoint.unwrap_or(config.endpoint());
+    let token = config.token.clone();
+    let body = json!({
         "model": model, 
         "max_tokens": MAX_TOKENS,
-        "messages": [{"role": "user", "content": arguments.prompt.unwrap_or_default()}],
-        "n": number, 
-        "temperature": temperature, 
-        "top_p": top_p});
+        "messages": [{"role": "user", "content": text.clone()}],
+        "n": cli.number, 
+        "temperature": cli.temperature, 
+        "top_p": cli.top_p});
 
-    let url = format!(
-        "{}{}",
-        config.endpoint.clone().unwrap_or(String::from(OPENAI_URL)),
-        COMPLETIONS_URL
-    );
-    let json_response = post_openai(
-        config.token,
-        url,
-        body,
-        arguments.disable_spinner,
-        config.timeout,
-    )?;
+    let url = format!("{}{}", endpoint, COMPLETIONS_URL);
+    let json_response = post_openai(token, url, body, cli.disable_spinner, config.timeout())?;
     let response: Response = serde_json::from_str(&json_response)
         .or(Err("Could not serialize response from chat completion"))?;
 
@@ -172,7 +150,7 @@ pub fn completions(arguments: Arguments, config: Config) -> Result<String, Strin
         .map(|x| x.message.content)
         .collect::<Vec<String>>()
         .join("\n\n---\n\n");
-    let suffix = arguments.suffix.unwrap_or_default();
+    let suffix = cli.suffix;
 
     Ok(format!("{output}{suffix}"))
 }
@@ -182,10 +160,10 @@ fn post_openai(
     url: String,
     body: serde_json::Value,
     disable_spinner: bool,
-    timeout: Option<u64>,
+    timeout: u64,
 ) -> Result<String, String> {
     let authorization: &str = &format!("Bearer {token}");
-    let timeout = Duration::from_secs(timeout.unwrap_or(30));
+    let timeout = Duration::from_secs(timeout);
 
     let spinner = maybe_start_spinner(disable_spinner);
     let response = Client::new()
