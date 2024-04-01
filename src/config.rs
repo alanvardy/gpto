@@ -2,6 +2,7 @@ use crate::{request, VERSION};
 use colored::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use serde_with::{serde_as, DefaultOnNull};
 use std::io::{Read, Write};
 use std::{fs, io};
 
@@ -9,25 +10,83 @@ use std::{fs, io};
 const VERSION_CHECK_PERCENTAGE: u8 = 10;
 
 /// App configuration, serialized as json in $XDG_CONFIG_HOME/gpto.cfg
+#[serde_as]
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
 pub struct Config {
     /// The OpenAI Api token
     pub token: String,
     /// Path to config file
     pub path: String,
-    pub model: Option<String>,
-    pub endpoint: Option<String>,
-    pub timeout: Option<u64>,
+    #[serde(default = "default_model")]
+    #[serde_as(deserialize_as = "DefaultOnNull")]
+    pub model: String,
+    #[serde_as(deserialize_as = "DefaultOnNull")]
+    #[serde(default = "default_endpoint")]
+    pub endpoint: String,
+    #[serde_as(deserialize_as = "DefaultOnNull")]
+    #[serde(default = "default_timeout")]
+    pub timeout: u64,
+}
+
+fn default_endpoint() -> String {
+    String::from("https://api.openai.com")
+}
+
+fn default_timeout() -> u64 {
+    30
+}
+
+fn default_model() -> String {
+    String::from("gpt-3.5-turbo")
 }
 
 impl Config {
+    // Need to remove this in a later version
+    pub fn endpoint(&self) -> String {
+        if self.endpoint.is_empty() {
+            println!(
+                "Please remove null endpoint value from gpto.cfg
+                This will break later versions of GPTO"
+            );
+            default_endpoint()
+        } else {
+            self.endpoint.clone()
+        }
+    }
+
+    // Need to remove this in a later version
+    pub fn timeout(&self) -> u64 {
+        if self.timeout == 0 {
+            println!(
+                "Please remove null timeout value from gpto.cfg
+                This will break later versions of GPTO"
+            );
+            default_timeout()
+        } else {
+            self.timeout
+        }
+    }
+
+    // Need to remove this in a later version
+    pub fn model(&self) -> String {
+        if self.model.is_empty() {
+            println!(
+                "Please remove null model value from gpto.cfg
+                This will break later versions of GPTO"
+            );
+            default_model()
+        } else {
+            self.model.clone()
+        }
+    }
+
     pub fn new(token: &str) -> Result<Config, String> {
         Ok(Config {
             path: generate_path()?,
             token: String::from(token),
-            model: None,
-            endpoint: None,
-            timeout: None,
+            model: default_model(),
+            endpoint: default_endpoint(),
+            timeout: default_timeout(),
         })
     }
 
@@ -51,14 +110,15 @@ impl Config {
 
         maybe_check_for_latest_version();
 
-        serde_json::from_str::<Config>(&json).map_err(|_| String::from("Could not parse JSON"))
+        serde_json::from_str::<Config>(&json)
+            .map_err(|e| format!("Could not parse JSON: \n{:?}\n\n{:?}\n\nYou may need to remove null values from your config at path: {}", e, json, path))
     }
 }
 
-pub fn get_or_create(config_path: Option<&str>) -> Result<Config, String> {
+pub fn get_or_create(config_path: Option<String>) -> Result<Config, String> {
     let path: String = match config_path {
         None => generate_path()?,
-        Some(path) => String::from(path).trim().to_owned(),
+        Some(path) => path.trim().to_owned(),
     };
     let desc = "Please enter your OpenAI API token from https://beta.openai.com/account/api-keys";
 
@@ -162,11 +222,11 @@ mod tests {
         assert_eq!(
             config.clone(),
             Ok(Config {
-                model: None,
+                model: default_model(),
                 token: String::from("faketoken"),
                 path: generate_path().unwrap(),
-                endpoint: None,
-                timeout: None,
+                endpoint: default_endpoint(),
+                timeout: 30,
             })
         );
         delete_config(&path);
@@ -177,11 +237,11 @@ mod tests {
         assert_eq!(
             config.clone(),
             Ok(Config {
-                model: None,
+                model: default_model(),
                 token: String::from("alreadycreated"),
                 path: generate_path().unwrap(),
-                endpoint: None,
-                timeout: None,
+                endpoint: default_endpoint(),
+                timeout: 30,
             })
         );
         delete_config(&path);
@@ -193,11 +253,11 @@ mod tests {
         let loaded_config = Config::load(&path).unwrap();
 
         let config = Config {
-            model: None,
+            model: default_model(),
             token: String::from("23984719029"),
             path: String::from("/home/vardy/dev/gpto/tests/gpto.cfg"),
-            endpoint: None,
-            timeout: None,
+            endpoint: default_endpoint(),
+            timeout: 30,
         };
         assert_eq!(loaded_config, config);
     }
