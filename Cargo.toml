@@ -1,6 +1,6 @@
 [package]
 name = "gpto"
-version = "0.1.8"
+version = "0.2.0"
 authors = ["Alan Vardy <alan@vardy.cc>"]
 edition = "2021"
 license = "MIT"
