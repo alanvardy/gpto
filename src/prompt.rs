@@ -6,8 +6,6 @@ use crate::config;
 use crate::request;
 use crate::Cli;
 
-const MAX_TOKENS: u32 = 1000;
-
 /// Get completions from input prompt
 pub fn completions(cli: Cli, text: &Option<String>, stdin: &bool) -> Result<String, String> {
     let text = string_or_stdin(text, stdin)?;
@@ -23,6 +21,7 @@ pub fn completions(cli: Cli, text: &Option<String>, stdin: &bool) -> Result<Stri
 
     // CLI only
     let temperature = cli.temperature;
+    let max_tokens = cli.max_tokens;
     let top_p = cli.top_p;
     let disable_spinner = cli.disable_spinner;
     let number = cli.number;
@@ -30,7 +29,7 @@ pub fn completions(cli: Cli, text: &Option<String>, stdin: &bool) -> Result<Stri
 
     let body = json!({
         "model": model, 
-        "max_tokens": MAX_TOKENS,
+        "max_tokens": max_tokens,
         "messages": [{"role": "user", "content": text}],
         "n": number, 
         "temperature": temperature, 

@@ -17,7 +17,6 @@ use crate::Cli;
 
 const COMPLETIONS_URL: &str = "/v1/chat/completions";
 const VERSIONS_URL: &str = "/v1/crates/gpto/versions";
-const MAX_TOKENS: u32 = 1000;
 
 const SPINNER: Spinners = Spinners::Dots4;
 const MESSAGE: &str = "Querying API";
@@ -86,7 +85,7 @@ pub fn conversation(cli: Cli, instructions: &str) -> Result<String, String> {
 
         let body = json!({ 
             "model": model, 
-            "max_tokens": MAX_TOKENS,
+            "max_tokens": cli.max_tokens,
             "messages": messages,
             "n": cli.number, 
             "temperature": cli.temperature, 
