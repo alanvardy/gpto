@@ -17,8 +17,8 @@ use crate::Cli;
 
 const COMPLETIONS_URL: &str = "/v1/chat/completions";
 const VERSIONS_URL: &str = "/v1/crates/gpto/versions";
-
 const MAX_TOKENS: u32 = 1000;
+
 const SPINNER: Spinners = Spinners::Dots4;
 const MESSAGE: &str = "Querying API";
 
@@ -126,21 +126,16 @@ fn put_message(messages: &mut Vec<HashMap<String, String>>, role: &str, content:
 }
 
 /// Get completions from input prompt
-pub fn completions(cli: Cli, text: String) -> Result<String, String> {
-    let config = config::get_or_create(cli.config)?;
-    let model = cli.model.unwrap_or(config.model());
-    let endpoint = cli.endpoint.unwrap_or(config.endpoint());
-    let token = config.token.clone();
-    let body = json!({
-        "model": model, 
-        "max_tokens": MAX_TOKENS,
-        "messages": [{"role": "user", "content": text.clone()}],
-        "n": cli.number, 
-        "temperature": cli.temperature, 
-        "top_p": cli.top_p});
-
+pub fn completions(
+    endpoint: String,
+    body: serde_json::Value,
+    token: String,
+    disable_spinner: bool,
+    timeout: u64,
+    suffix: String,
+) -> Result<String, String> {
     let url = format!("{}{}", endpoint, COMPLETIONS_URL);
-    let json_response = post_openai(token, url, body, cli.disable_spinner, config.timeout())?;
+    let json_response = post_openai(token, url, body, disable_spinner, timeout)?;
     let response: Response = serde_json::from_str(&json_response)
         .or(Err("Could not serialize response from chat completion"))?;
 
@@ -150,7 +145,6 @@ pub fn completions(cli: Cli, text: String) -> Result<String, String> {
         .map(|x| x.message.content)
         .collect::<Vec<String>>()
         .join("\n\n---\n\n");
-    let suffix = cli.suffix;
 
     Ok(format!("{output}{suffix}"))
 }
