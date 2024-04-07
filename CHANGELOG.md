@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add a separate flag for stdin, can now input text and have std at the same time
+- Add a flag for setting max tokens
 
 ## 2024-04-04 0.2.0
 

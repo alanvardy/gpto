@@ -15,14 +15,12 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 const AUTHOR: &str = "Alan Vardy <alan@vardy.cc>";
 const ABOUT: &str = "A tiny unofficial OpenAI client";
 
-pub const ECHO_DEFAULT: bool = false;
-pub const MODELS_HELP: &str = "Returns a list of models from OpenAI";
-
 #[derive(Parser, Clone)]
 #[command(name = NAME)]
 #[command(version = VERSION)]
 #[command(about = ABOUT, long_about = None)]
 #[command(author = AUTHOR, version)]
+#[command(arg_required_else_help(true))]
 struct Cli {
     #[arg(short, long, default_value_t = false)]
     /// Disable the spinner and message when querying
@@ -51,6 +49,10 @@ struct Cli {
     #[arg(short, long, default_value_t = 1)]
     /// How many completions to generate for each prompt
     number: u8,
+
+    #[arg(short = 'a', long, default_value_t = 1000)]
+    /// Maximum number of tokens to use for each request
+    max_tokens: u32,
 
     #[arg(short = 'o', long, default_value_t = 1.0)]
     /// An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both.
@@ -95,5 +97,15 @@ fn main() {
             println!("{}", e.red());
             std::process::exit(1);
         }
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cli_works() {
+        // Mostly checks that it is not going to throw an exception because of conflicting short arguments
+        Cli::try_parse().err();
     }
 }
