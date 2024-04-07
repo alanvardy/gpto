@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a separate flag for stdin, can now input text and have std at the same time
+
 ## 2024-04-04 0.2.0
 
 - Breaking changes to API, `prompt` and `conversation` are now sub commands

@@ -3,12 +3,11 @@ extern crate matches;
 
 extern crate clap;
 
-use std::io;
-
 use clap::{Parser, Subcommand};
 use colored::*;
 
 mod config;
+mod prompt;
 mod request;
 
 const NAME: &str = "GPTO";
@@ -65,8 +64,12 @@ struct Cli {
 enum Commands {
     /// The prompt(s) to generate completions for. Also accepts text from stdin
     Prompt {
+        ///
         #[arg(short, long)]
         text: Option<String>,
+
+        #[arg(short, long, default_value_t = false)]
+        stdin: bool,
     },
 
     // Start a conversation with an optional description of the bot's role
@@ -79,10 +82,7 @@ fn main() {
     let cli = Cli::parse();
 
     let result = match &cli.command {
-        Commands::Prompt { text } => {
-            let text = string_or_stdin(text);
-            request::completions(cli.clone(), text)
-        }
+        Commands::Prompt { text, stdin } => prompt::completions(cli.clone(), text, stdin),
         Commands::Conversation { instructions } => request::conversation(cli.clone(), instructions),
     };
 
@@ -94,17 +94,6 @@ fn main() {
         Err(e) => {
             println!("{}", e.red());
             std::process::exit(1);
-        }
-    }
-}
-
-fn string_or_stdin(text: &Option<String>) -> String {
-    match text {
-        Some(string) => string.clone(),
-        None => {
-            let mut buffer = String::new();
-            io::stdin().read_line(&mut buffer).unwrap();
-            buffer
         }
     }
 }
