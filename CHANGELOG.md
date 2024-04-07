@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2024-04-07 0.2.1
+
 - Add a separate flag for stdin, can now input text and have std at the same time
 - Add a flag for setting max tokens
 - Add timeout flag
