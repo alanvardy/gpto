@@ -13,11 +13,11 @@ pub fn completions(cli: Cli, text: &Option<String>, stdin: &bool) -> Result<Stri
 
     // Config or CLI
     let model = cli.model.unwrap_or(config.model());
+    let timeout = cli.timeout.unwrap_or(config.timeout);
     let endpoint = cli.endpoint.unwrap_or(config.endpoint());
 
     // Config only
     let token = config.token.clone();
-    let timeout = config.timeout;
 
     // CLI only
     let temperature = cli.temperature;
