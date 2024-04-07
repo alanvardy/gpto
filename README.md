@@ -24,6 +24,8 @@ Options:
   -e, --endpoint <ENDPOINT>        URL to be queried, defaults to https://api.openai.com and can be set in config
   -t, --temperature <TEMPERATURE>  What sampling temperature to use. Higher values means the model will take more risks. Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer [default: 1]
   -n, --number <NUMBER>            How many completions to generate for each prompt [default: 1]
+  -a, --max-tokens <MAX_TOKENS>    Maximum number of tokens to use for each request [default: 1000]
+  -i, --timeout <TIMEOUT>          Maximum length of time in seconds to wait for an API request to complete
   -o, --top-p <TOP_P>              An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered. We generally recommend altering this or temperature but not both [default: 1]
   -h, --help                       Print help
   -V, --version                    Print version
@@ -99,10 +101,6 @@ def multiply_by_two(x)
   x * 2
 end
 ```
-
-## Disabling the spinners
-
-If you are using vim or helix and calling this application from within them the spinners will interfere with the output, You can disable the spinner by setting the environment `DISABLE_SPINNER` to any value. i.e. `DISABLE_SPINNER=1 gpto -p This is a prompt`
 
 ## Setting timeout
 
