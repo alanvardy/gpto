@@ -1,7 +1,6 @@
+extern crate clap;
 #[cfg(test)]
 extern crate matches;
-
-extern crate clap;
 
 use clap::{Parser, Subcommand};
 use colored::*;

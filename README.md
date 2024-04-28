@@ -102,6 +102,28 @@ def multiply_by_two(x)
 end
 ```
 
+## Using a local LLM
+
+You can run a local LLM using [ollama](https://github.com/ollama/ollama) and connect to with GPTO.
+
+Get the model you want
+
+```bash
+ollama pull llama3
+```
+
+Start the ollama server
+
+```bash
+ollama serve
+```
+
+And then in another terminal run GPTO
+
+```bash
+gpto -m llama3 -e http://localhost:11434 prompt -t "Hello Llama"
+```
+
 ## Setting timeout
 
 Timeout is 30s by default, this can be altered by changing the `timeout` option in `gpto.cfg`
