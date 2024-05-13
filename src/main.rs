@@ -69,10 +69,11 @@ struct Cli {
 enum Commands {
     /// The prompt(s) to generate completions for. Also accepts text from stdin
     Prompt {
-        ///
+        /// Text for the LLM to complete
         #[arg(short, long)]
         text: Option<String>,
 
+        /// Accept text from stdin, will be appended after text if both are enabled
         #[arg(short, long, default_value_t = false)]
         stdin: bool,
     },
