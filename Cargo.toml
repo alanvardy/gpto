@@ -28,7 +28,7 @@ clap = { version = "4.5.8", features = ["derive"] }
 rand = "0.8.5"
 spinners = "4.1.1"
 inquire = "0.7.5"
-serde_with = {version = "3.8.2", features = ["json"]}
+serde_with = {version = "3.8.3", features = ["json"]}
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
