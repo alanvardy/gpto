@@ -31,4 +31,4 @@ inquire = "0.7.5"
 serde_with = {version = "3.9.0", features = ["json"]}
 
 [dev-dependencies]
-pretty_assertions = "1.4.0"
+pretty_assertions = "1.4.1"
