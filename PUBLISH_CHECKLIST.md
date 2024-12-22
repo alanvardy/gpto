@@ -1,5 +1,36 @@
 # Publish Checklist
 
+## Setup `gpto-bin`
+
+Create `gpto-bin` directory for pushing to AUR
+
+```fish
+./setup_aur.sh
+```
+
+## Experimental Publish Procedure
+
+1. Update `CHANGELOG.md` with version number
+2. Create PR with
+
+```fish
+VERSION=0.2.1 ./create_pr.sh
+```
+
+3. Wait for it to pass, then merge and pull in latest changes
+
+```fish
+gh pr merge -r --admin && gs
+```
+
+4. Release it to all the places
+
+```fish
+VERSION=0.2.1 ./release.sh
+```
+
+# ---------------------------------------
+
 ## Setup gpto-bin
 
 ```bash
