@@ -2,7 +2,6 @@ use crate::{request, VERSION};
 use colored::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use serde_with::{serde_as, DefaultOnNull};
 use std::io::{Read, Write};
 use std::{fs, io};
 
@@ -10,7 +9,6 @@ use std::{fs, io};
 const VERSION_CHECK_PERCENTAGE: u8 = 10;
 
 /// App configuration, serialized as json in $XDG_CONFIG_HOME/gpto.cfg
-#[serde_as]
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Debug)]
 pub struct Config {
     /// The OpenAI Api token
@@ -18,12 +16,9 @@ pub struct Config {
     /// Path to config file
     pub path: String,
     #[serde(default = "default_model")]
-    #[serde_as(deserialize_as = "DefaultOnNull")]
     pub model: String,
-    #[serde_as(deserialize_as = "DefaultOnNull")]
     #[serde(default = "default_endpoint")]
     pub endpoint: String,
-    #[serde_as(deserialize_as = "DefaultOnNull")]
     #[serde(default = "default_timeout")]
     pub timeout: u64,
 }
@@ -41,45 +36,6 @@ fn default_model() -> String {
 }
 
 impl Config {
-    // Need to remove this in a later version
-    pub fn endpoint(&self) -> String {
-        if self.endpoint.is_empty() {
-            println!(
-                "Please remove null endpoint value from gpto.cfg
-                This will break later versions of GPTO"
-            );
-            default_endpoint()
-        } else {
-            self.endpoint.clone()
-        }
-    }
-
-    // Need to remove this in a later version
-    pub fn timeout(&self) -> u64 {
-        if self.timeout == 0 {
-            println!(
-                "Please remove null timeout value from gpto.cfg
-                This will break later versions of GPTO"
-            );
-            default_timeout()
-        } else {
-            self.timeout
-        }
-    }
-
-    // Need to remove this in a later version
-    pub fn model(&self) -> String {
-        if self.model.is_empty() {
-            println!(
-                "Please remove null model value from gpto.cfg
-                This will break later versions of GPTO"
-            );
-            default_model()
-        } else {
-            self.model.clone()
-        }
-    }
-
     pub fn new(token: &str) -> Result<Config, String> {
         Ok(Config {
             path: generate_path()?,

@@ -69,8 +69,8 @@ pub fn conversation(cli: Cli, instructions: &str) -> Result<String, String> {
     let mut messages: Vec<HashMap<String, String>> = Vec::new();
     put_message(&mut messages, "system", instructions);
 
-    let model = cli.model.unwrap_or(config.model());
-    let endpoint = cli.endpoint.unwrap_or(config.endpoint());
+    let model = cli.model.unwrap_or(config.model);
+    let endpoint = cli.endpoint.unwrap_or(config.endpoint);
 
     loop {
         let input = Text::new("Ask a question or quit > ")
@@ -98,7 +98,7 @@ pub fn conversation(cli: Cli, instructions: &str) -> Result<String, String> {
             url,
             body,
             cli.disable_spinner,
-            config.timeout(),
+            config.timeout,
         )?;
         let response: Response = serde_json::from_str(&json_response)
             .or(Err("Could not serialize response from chat completion"))?;
