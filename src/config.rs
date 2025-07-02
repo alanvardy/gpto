@@ -67,7 +67,7 @@ impl Config {
         maybe_check_for_latest_version();
 
         serde_json::from_str::<Config>(&json)
-            .map_err(|e| format!("Could not parse JSON: \n{:?}\n\n{:?}\n\nYou may need to remove null values from your config at path: {}", e, json, path))
+            .map_err(|e| format!("Could not parse JSON: \n{e:?}\n\n{json:?}\n\nYou may need to remove null values from your config at path: {path}"))
     }
 }
 
@@ -161,7 +161,7 @@ mod tests {
         let config_directory_str = config_directory
             .to_str()
             .expect("could not set home directory to str");
-        let path = format!("{}/test", config_directory_str);
+        let path = format!("{config_directory_str}/test");
 
         // Just in case there is a leftover config from a previous test run
         let _ = fs::remove_file(&path);

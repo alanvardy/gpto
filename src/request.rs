@@ -91,7 +91,7 @@ pub fn conversation(cli: Cli, instructions: &str) -> Result<String, String> {
             "temperature": cli.temperature, 
             "top_p": cli.top_p});
 
-        let url = format!("{}{}", endpoint, COMPLETIONS_URL);
+        let url = format!("{endpoint}{COMPLETIONS_URL}");
 
         let json_response = post_openai(
             config.token.clone(),
@@ -133,7 +133,7 @@ pub fn completions(
     timeout: u64,
     suffix: String,
 ) -> Result<String, String> {
-    let url = format!("{}{}", endpoint, COMPLETIONS_URL);
+    let url = format!("{endpoint}{COMPLETIONS_URL}");
     let json_response = post_openai(token, url, body, disable_spinner, timeout)?;
     let response: Response = serde_json::from_str(&json_response)
         .or(Err("Could not serialize response from chat completion"))?;
@@ -166,7 +166,7 @@ fn post_openai(
         .header(AUTHORIZATION, authorization)
         .json(&body)
         .send()
-        .map_err(|e| format!("Did not get response from server\n{:?}", e))?;
+        .map_err(|e| format!("Did not get response from server\n{e:?}"))?;
     maybe_stop_spinner(spinner);
 
     if response.status().is_success() {
