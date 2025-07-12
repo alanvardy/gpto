@@ -22,7 +22,7 @@ dirs = "5.0"
 matches = "0.1.10"
 regex = "1"
 chrono = "0.4.41"
-chrono-tz = "0.10.3"
+chrono-tz = "0.10.4"
 colored = "2.2.0"
 clap = { version = "4.5.41", features = ["derive"] }
 rand = "0.9.1"
