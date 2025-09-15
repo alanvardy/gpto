@@ -27,7 +27,7 @@ colored = "2.2.0"
 clap = { version = "4.5.47", features = ["derive"] }
 rand = "0.9.2"
 spinners = "4.1.1"
-inquire = "0.7.5"
+inquire = "0.8.0"
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
